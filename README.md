@@ -1,4 +1,4 @@
-# Rib.it v2
+# About
 
 This is a complete remake of our original project <a href="https://github.com/FefanAM/Rib.it">located here.</a>
 
