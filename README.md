@@ -6,7 +6,7 @@ It is inspired by the game 'Jump King'.
 
 # Download
 
-Download the repository or download <a href="https://github.com/zero-coding-skills/rib.it.v2/releases">here</a>.
+You can find the latest release <a href="https://github.com/zero-coding-skills/rib.it.v2/releases/latest">here</a>.
 
 # How to use
 
