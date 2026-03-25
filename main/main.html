@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css">
+    <script src="main.js"></script>
+    <title>rib.it | info</title>
+</head>
+<body>
+    <div id="bg">
+        <div id="img"></div>
+    </div>
+    <div id="content">
+        <div id="buttons">
+            <button onclick="show('download')">download</button>
+            <button onclick="show('about')">about</button>
+        </div>
+        <h1>welcome to rib.it</h1>
+        <div>
+            <p>tomis...</p>
+        </div>
+        <div id="menus" style="opacity: 0; pointer-events: none;">
+            <div id="about" style="opacity: 0;">
+                <h1>ABOUT</h1>
+                <p>Well, there is nothing to see here right now...</p>
+            </div>
+            <div id="download" style="opacity: 0;">
+                <div id="d-menu">
+                    <h1>Download</h1>
+                    <p>Python: (requires pygame extension)</p>
+                    <form method="get" action="game/game.py">
+                        <button type="submit">Download</button>
+                    </form>
+                    <p>C#:</p>
+                    <form method="get">
+                        <button onclick="attention()">Download</button>
+                    </form>
+                </div>
+                <p class="gray">Here, you can download the python version or the c# version (currently not available). <br> The python version might not work on your computer depending on installed python extensions.</p>
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>
