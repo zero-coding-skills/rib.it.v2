@@ -119,3 +119,16 @@ div p {
 #d-menu button:hover {
     transform: translate(5px, 5px);
 }
+
+#link {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+}
+
+#link a {
+    color: #cdcdcd;
+    font-size: 32px;
+    font-family: Pixels;
+    text-decoration: none;
+}
