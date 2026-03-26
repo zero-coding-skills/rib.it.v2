@@ -4,7 +4,9 @@ pygame.init()
 
 scale = 2  # scales the size of everything
 
-screen = pygame.display.set_mode((5120, 2160), pygame.FULLSCREEN)
+max_x, max_y = pygame.display.get_desktop_sizes()[0]
+screen = pygame.display.set_mode((max_x, max_y), pygame.FULLSCREEN)
+
 clock = pygame.time.Clock()
 default_font = pygame.font.Font("assets/jersey10.ttf", 100 * scale)
 
@@ -12,7 +14,6 @@ running = True
 show_menu = False
 frame_rate = 60
 player_img = "assets/placeholder.png"
-max_x, max_y = pygame.display.get_surface().get_size()
 print(max_x, max_y)
 
 
