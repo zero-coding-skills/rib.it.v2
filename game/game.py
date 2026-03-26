@@ -4,9 +4,9 @@ pygame.init()
 
 scale = 2  # scales the size of everything
 
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screen = pygame.display.set_mode((5120, 2160), pygame.FULLSCREEN)
 clock = pygame.time.Clock()
-font = pygame.font.Font("assets/jersey10.ttf", 100 * scale)
+default_font = pygame.font.Font("assets/jersey10.ttf", 100 * scale)
 
 running = True
 show_menu = False
@@ -49,22 +49,40 @@ class Ground(pygame.sprite.Sprite):
 
 
 class UserInterface(pygame.sprite.Sprite):
-    def __init__(self, text, on_click, x, y, has_border=False):
+    def __init__(self, text, on_click, x, y, has_border=False, font=default_font):
         pygame.sprite.Sprite.__init__(self)
+
+        self.mouse_hover = None
+        self.font = font
+        self.text = text
         self.color = "#92ad8d"
         self.bg = "#242424"
-        self.image = font.render(text, True, self.color, self.bg)
-        if has_border:
-            pygame.draw.rect(self.image, self.color, self.image.get_rect(), 4)
-        self.rect = self.image.get_rect()
-        self.rect.center = (x, y)
+        self.has_border = has_border
+        self.x, self.y = x, y
+        self.__update_text()
         self.on_click = on_click
 
-    def update(self, mouse_pos, mouse_click):
-        if self.rect.collidepoint(mouse_pos):
-            if mouse_click and self.on_click is not None:
-                self.on_click()
+    def __update_text(self):
+        self.image = self.font.render(self.text, True, self.color, self.bg)
+        if self.has_border:
+            pygame.draw.rect(self.image, self.color, self.image.get_rect(), 4)
+        if self.mouse_hover:
+            self.image = pygame.transform.scale_by(self.image, 0.95)
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x, self.y)
 
+    def update(self, mouse_pos, mouse_click):
+        if self.rect.collidepoint(mouse_pos) and self.on_click is not None:
+            self.mouse_hover = True
+            # self.font.set_underline(True)
+            self.color = "#60735d"
+            if mouse_click:
+                self.on_click()
+        else:
+            # self.font.set_underline(False)
+            self.color = "#92ad8d"
+            self.mouse_hover = False
+        self.__update_text()
 
 
 def render_menu():
@@ -81,7 +99,7 @@ def quit_game():
     running = False
 
 
-ground = Ground(0, max_y - 10)
+ground = Ground(0, max_y)
 frog = Player(max_x / 2 , max_y / 2)
 main_group = pygame.sprite.Group(ground, frog)
 main_text = UserInterface(" RIB.IT ", None, max_x / 2, max_y * 0.4)
