@@ -1,5 +1,14 @@
 import pygame
 
+# TODO:
+#   move everything when player reaches the camera box edge
+#   map grid
+#   gravity
+#   player controls
+#   more menu options
+#   music and sfx
+#   graphics
+
 pygame.init()
 
 scale = 2  # scales the size of everything
@@ -18,13 +27,35 @@ print(max_x, max_y)
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y):
+    def __init__(self, x, y, gravity):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(player_img)
         self.image = pygame.transform.scale_by(self.image, scale)
+        self.world_x, self.world_y = 0, 0
         self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
+        self.x = x
+        self.y = y
+        self.gravity = gravity
+
+    @property
+    def position(self):
+        return self.world_x, self.world_y
+
+    @property
+    def x(self):
+        return self.rect.x
+
+    @x.setter
+    def x(self, pos):
+        self.rect.x = max(min(pos, 0.6 * max_x - self.rect.width), 0.4 * max_x)
+
+    @property
+    def y(self):
+        return self.rect.y
+
+    @y.setter
+    def y(self, pos):
+        self.rect.y = max(min(pos, 0.6 * max_y - self.rect.height), 0.4 * max_y)
 
 
 class Block(pygame.sprite.Sprite):
@@ -101,7 +132,7 @@ def quit_game():
 
 
 ground = Ground(0, max_y)
-frog = Player(max_x / 2 , max_y / 2)
+frog = Player(0, 0, 1)
 main_group = pygame.sprite.Group(ground, frog)
 main_text = UserInterface(" RIB.IT ", None, max_x / 2, max_y * 0.4)
 quit_button = UserInterface(" QUIT ", quit_game, max_x / 2, max_y * 0.7, True)
@@ -110,7 +141,7 @@ ui = pygame.sprite.Group(quit_button, main_text)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
+            quit_game()
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
                 if show_menu:
