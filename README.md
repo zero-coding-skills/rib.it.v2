@@ -4,6 +4,14 @@ This is a complete remake of our original project <a href="https://github.com/Fe
 
 It is inspired by the game 'Jump King'.
 
+### Controls
+
+You ascend the obstacles by jumping from one to the next.
+
+To jump, hold `Space` to charge jump intensity and aim using `A` ,`D`.
+
+Let go of space to jump.
+
 # Download
 
 You can find the latest release <a href="https://github.com/zero-coding-skills/rib.it.v2/releases/latest">here</a>.
