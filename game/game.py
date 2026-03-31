@@ -7,6 +7,7 @@ import math
 #   more menu options
 #   music and sfx
 #   graphics
+#   reset angle of arrow upon hitting the ground
 
 pygame.init()
 
@@ -34,7 +35,7 @@ print(max_x, max_y)
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, gravity):
+    def __init__(self, x, y, charge_speed):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(player_img)
         self.image = pygame.transform.scale_by(self.image, scale)
@@ -42,15 +43,15 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
-        self.gravity = 10
+        self.gravity = 1000
         self.velocity = 0
-        self.max_velocity = 400 * scale
-        self.jump_strength = 100
+        self.jump_strength = 65
         self.speed_y = 0
         self.speed_x = 0
         self.force = 0
-        self.drag = 30
+        self.drag = 500
         self.charging = False
+        self.charge_speed = charge_speed
         self.jump_angle = 90
         self.is_falling = True
         self.arrow = pygame.image.load(arrow_img)
@@ -58,7 +59,7 @@ class Player(pygame.sprite.Sprite):
 
     def charge(self):
         if self.charging:
-            self.force = min(10, self.force + 5 * dt)
+            self.force = min(10, self.force + self.charge_speed * dt)
             print(f'charging force is: {self.force}')
         else:
             if self.force != 0:
@@ -68,15 +69,25 @@ class Player(pygame.sprite.Sprite):
 
 
     def move(self):
-        self.speed_y += self.velocity * math.sin(self.angle)
-        self.speed_x += self.velocity * math.cos(self.angle)
+        self.speed_y += self.velocity * math.sin(math.radians(self.angle))
+        self.speed_x += self.velocity * math.cos(math.radians(self.angle))
         self.velocity = 0
+        if self.is_falling:
+            self.speed_y += - self.gravity * dt
 
-        self.speed_y += - self.gravity
-        # self.speed_x -= self.drag
         self.y -= self.speed_y * scale * dt
-        self.x += self.speed_x
+        self.x += self.speed_x * scale * dt
 
+        if self.speed_x > 0:
+            if self.speed_x < self.drag * dt or not self.is_falling:
+                self.speed_x = 0
+            else:
+                self.speed_x -= self.drag * dt * math.fabs(math.cos(math.radians(self.angle))) ** 1.5
+        elif self.speed_x < 0:
+            if - self.speed_x < self.drag * dt or not self.is_falling:
+                self.speed_x = 0
+            else:
+                self.speed_x += self.drag * dt * math.fabs(math.cos(math.radians(self.angle))) ** 1.5
 
     def rotate_arrow(self, pivot):
         # rotate the leg image around the pivot
@@ -88,8 +99,8 @@ class Player(pygame.sprite.Sprite):
         return image, rect
 
     def update(self):
-        if not self.is_falling:  # if player is falling
-            blit_arrow, arrow_rect = self.rotate_arrow([self.x + self.rect.width * scale * 0.25, self.y - scale * 5])
+        if not self.is_falling:
+            blit_arrow, arrow_rect = self.rotate_arrow([self.x + self.rect.width * 0.5, self.y - scale * 5])
             screen.blit(blit_arrow, arrow_rect)
             self.speed_y = 0
         self.charge()
@@ -105,7 +116,8 @@ class Player(pygame.sprite.Sprite):
 
     @angle.setter
     def angle(self, value):
-        self.jump_angle = min(max(value, 0), 180)
+        if not self.is_falling:
+            self.jump_angle = min(max(value, 0), 180)
 
     @property
     def x(self):
@@ -203,7 +215,7 @@ def quit_game():
 
 
 ground = Ground(0, max_y)
-frog = Player(0, 0, 1000)
+frog = Player(0, 0, 8)
 main_group = pygame.sprite.Group(ground, frog)
 main_text = UserInterface(" RIB.IT ", None, max_x / 2, max_y * 0.4)
 quit_button = UserInterface(" QUIT ", quit_game, max_x / 2, max_y * 0.7, True)
