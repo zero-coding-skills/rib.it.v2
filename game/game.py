@@ -42,12 +42,10 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
-        self.gravity = 300
+        self.gravity = 10
         self.max_velocity = 400 * scale
-        self.jump_strength = 130
-        self.velocity = 0
-        self.falling_time = 0
-        self.previous_time = clock.get_time()
+        self.jump_strength = 1000
+        self.speed_y = 0
         self.force = 0
         self.charging = False
         self.jump_angle = 90
@@ -67,11 +65,9 @@ class Player(pygame.sprite.Sprite):
 
 
     def move(self):
-        self.velocity = max(self.velocity - 0.5 * self.gravity * self.falling_time ** 2, - self.max_velocity)
-        if self.velocity > 0:
-            self.x, self.y = self.x + self.velocity * math.cos(self.angle * math.pi / 180) * dt, self.y - self.velocity * math.sin(self.angle * math.pi / 180) * dt
-        else:
-            self.y -= self.velocity * dt
+        self.speed_y += - self.gravity
+        self.y -= self.speed_y * scale
+
 
     def rotate_arrow(self, pivot):
         # rotate the leg image around the pivot
@@ -83,13 +79,10 @@ class Player(pygame.sprite.Sprite):
         return image, rect
 
     def update(self):
-        if self.is_falling:  # if player is falling
-            self.falling_time += clock.get_time() - self.previous_time
-        else:
-            self.falling_time = 0
+        if not self.is_falling:  # if player is falling
             blit_arrow, arrow_rect = self.rotate_arrow([self.x + self.rect.width * scale * 0.25, self.y - scale * 5])
             screen.blit(blit_arrow, arrow_rect)
-        self.previous_time = clock.get_time()
+            self.speed_y = 0
         self.charge()
         self.move()
 
@@ -111,7 +104,8 @@ class Player(pygame.sprite.Sprite):
 
     @x.setter
     def x(self, pos):
-        self.rect.x = max(min(pos, 0.6 * max_x - self.rect.width), 0.4 * max_x)
+        # self.rect.x = max(min(pos, 0.6 * max_x - self.rect.width), 0.4 * max_x)
+        self.rect.x = max(min(pos,max_x - self.rect.width), 0)
 
     @property
     def y(self):
@@ -119,8 +113,8 @@ class Player(pygame.sprite.Sprite):
 
     @y.setter
     def y(self, pos):
-        self.rect.y = max(min(pos, 0.6 * max_y - self.rect.height), 0.4 * max_y)
-        if self.y == 0.6 * max_y - self.rect.height:
+        self.rect.y = max(min(pos, max_y - self.rect.height), 0)
+        if self.y == max_y - self.rect.height:
             self.is_falling = False
         else:
             self.is_falling = True
