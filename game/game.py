@@ -22,14 +22,14 @@ else:
 
 clock = pygame.time.Clock()
 dt = 0
-default_font = pygame.font.Font("game/assets/jersey10.ttf", 100 * scale)
+default_font = pygame.font.Font("assets/jersey10.ttf", 100 * scale)
 
 running = True
 show_menu = False
 frame_rate = 60
 
-arrow_img = "game/assets/arrow.png"
-player_img = "game/assets/placeholder.png"
+arrow_img = "assets/arrow.png"
+player_img = "assets/placeholder.png"
 print(max_x, max_y)
 
 
@@ -43,10 +43,13 @@ class Player(pygame.sprite.Sprite):
         self.x = x
         self.y = y
         self.gravity = 10
+        self.velocity = 0
         self.max_velocity = 400 * scale
-        self.jump_strength = 1000
+        self.jump_strength = 100
         self.speed_y = 0
+        self.speed_x = 0
         self.force = 0
+        self.drag = 30
         self.charging = False
         self.jump_angle = 90
         self.is_falling = True
@@ -65,8 +68,14 @@ class Player(pygame.sprite.Sprite):
 
 
     def move(self):
+        self.speed_y += self.velocity * math.sin(self.angle)
+        self.speed_x += self.velocity * math.cos(self.angle)
+        self.velocity = 0
+
         self.speed_y += - self.gravity
-        self.y -= self.speed_y * scale
+        # self.speed_x -= self.drag
+        self.y -= self.speed_y * scale * dt
+        self.x += self.speed_x
 
 
     def rotate_arrow(self, pivot):
