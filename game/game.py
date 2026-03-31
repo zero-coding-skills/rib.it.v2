@@ -28,7 +28,7 @@ running = True
 show_menu = False
 frame_rate = 60
 
-arrow_img = "game/assets/arrow.png"
+arrow_img = "game/assets/arrow-right.png"
 player_img = "game/assets/placeholder.png"
 print(max_x, max_y)
 
@@ -70,11 +70,17 @@ class Player(pygame.sprite.Sprite):
 
 
     def rotate_arrow(self, pivot):
-        # rotate the leg image around the pivot
+        # rotate the arrow image around the pivot
         image = pygame.Surface((self.arrow.get_width(), self.arrow.get_height() * 2), pygame.SRCALPHA)
         image.blit(self.arrow, (0, 0))
         image = pygame.transform.rotozoom(image, self.angle - 90, 1)
         rect = image.get_rect()
+        if self.angle > 90:
+            self.arrow = pygame.image.load("game/assets/arrow-left.png")
+            self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
+        else:
+            self.arrow = pygame.image.load(arrow_img)
+            self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
         rect.center = pivot
         return image, rect
 
