@@ -50,6 +50,7 @@ h1 {
 }
 
 #content {
+    z-index: 2;
     position: fixed;
     top: 0;
     left: 0;
@@ -124,11 +125,4 @@ div p {
     position: fixed;
     bottom: 25px;
     right: 25px;
-}
-
-#link a {
-    color: #cdcdcd;
-    font-size: 32px;
-    font-family: Pixels;
-    text-decoration: none;
 }

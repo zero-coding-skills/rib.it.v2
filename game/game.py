@@ -22,14 +22,14 @@ else:
 
 clock = pygame.time.Clock()
 dt = 0
-default_font = pygame.font.Font("assets/jersey10.ttf", 100 * scale)
+default_font = pygame.font.Font("game/assets/jersey10.ttf", 100 * scale)
 
 running = True
 show_menu = False
 frame_rate = 60
 
-arrow_img = "assets/arrow.png"
-player_img = "assets/placeholder.png"
+arrow_img = "game/assets/arrow.png"
+player_img = "game/assets/placeholder.png"
 print(max_x, max_y)
 
 
