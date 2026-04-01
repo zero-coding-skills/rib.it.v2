@@ -1,6 +1,6 @@
-import pygame
 import math
 import random
+import pygame
 
 # TODO:
 #   move everything when player reaches the camera box edge
@@ -32,6 +32,7 @@ frame_rate = 60
 
 arrow_img = "game/assets/arrow-right.png"
 player_img = "game/assets/placeholder.png"
+level = "game/assets/map-placeholder.png"
 print(max_x, max_y)
 
 
@@ -64,16 +65,15 @@ class Player(pygame.sprite.Sprite):
         else:
             if self.force != 0:
                 self.velocity = self.jump_strength * self.force
-                print(f'final force is: {self.force}')
+                print(f"final force is: {self.force}")
             self.force = 0
-
 
     def move(self):
         self.speed_y += self.velocity * math.sin(math.radians(self.angle))
         self.speed_x += self.velocity * math.cos(math.radians(self.angle))
         self.velocity = 0
         if self.is_falling:
-            self.speed_y += - self.gravity * dt
+            self.speed_y += -self.gravity * dt
 
         self.y -= self.speed_y * scale * dt
         self.x += self.speed_x * scale * dt
@@ -82,12 +82,12 @@ class Player(pygame.sprite.Sprite):
             if self.speed_x < self.drag * dt or not self.is_falling:
                 self.speed_x = 0
             else:
-                self.speed_x -= self.drag * dt * math.fabs(math.cos(math.radians(self.angle))) ** 1.5
+                self.speed_x -= (self.drag * dt * math.fabs(math.cos(math.radians(self.angle))) ** 1.5)
         elif self.speed_x < 0:
-            if - self.speed_x < self.drag * dt or not self.is_falling:
+            if -self.speed_x < self.drag * dt or not self.is_falling:
                 self.speed_x = 0
             else:
-                self.speed_x += self.drag * dt * math.fabs(math.cos(math.radians(self.angle))) ** 1.5
+                self.speed_x += (self.drag * dt * math.fabs(math.cos(math.radians(self.angle))) ** 1.5)
 
     def rotate_arrow(self, pivot):
         # rotate the arrow image around the pivot
@@ -132,7 +132,7 @@ class Player(pygame.sprite.Sprite):
     @x.setter
     def x(self, pos):
         # self.rect.x = max(min(pos, 0.6 * max_x - self.rect.width), 0.4 * max_x)
-        self.rect.x = max(min(pos,max_x - self.rect.width), 0)
+        self.rect.x = max(min(pos, max_x - self.rect.width), 0)
 
     @property
     def y(self):
@@ -161,14 +161,25 @@ class Block(pygame.sprite.Sprite):
         self.breakable = breakable
         self.moving = moving
 
+
 class Ground(pygame.sprite.Sprite):
-    def __init__(self, x , y):
+    def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((max_x, 10))
         self.image = pygame.transform.scale_by(self.image, scale)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+
+
+class Map(pygame.sprite.Sprite):
+    def __init__(self, level):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(level)
+        self.image = pygame.transform.scale_by(self.image, scale)
+        self.rect = self.image.get_rect()
+        self.rect.x = 0
+        self.rect.y = max_y - self.rect.height
 
 
 class UserInterface(pygame.sprite.Sprite):
@@ -207,6 +218,7 @@ class UserInterface(pygame.sprite.Sprite):
             self.mouse_hover = False
         self.__update_text()
 
+
 def generate_blocks(value):
     block_X = random.randint(0, max_x)
     block_Y = random.randint(0, max_y)
@@ -215,18 +227,29 @@ def generate_blocks(value):
     else:
         return block_Y
 
+
+def camera_move():
+    if frog.y >= 0.5 * max_y:
+        pass
+    elif frog.x >= max_x:
+        pass
+    elif frog.x <= 0:
+        pass
+
+
 def render_menu():
-        if show_menu:
-            ui.draw(screen)
-            for item in ui:
-                item.update(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0])
-            return True
-        return False
+    if show_menu:
+        ui.draw(screen)
+        for item in ui:
+            item.update(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0])
+        return True
+    return False
 
 
 def quit_game():
     global running
     running = False
+
 
 block_1 = Block(generate_blocks("x"), generate_blocks("y"), "game/assets/placeholder.png", False, False)
 block_group = pygame.sprite.Group(block_1)
@@ -236,6 +259,8 @@ main_group = pygame.sprite.Group(frog)
 main_text = UserInterface(" RIB.IT ", None, max_x / 2, max_y * 0.4)
 quit_button = UserInterface(" QUIT ", quit_game, max_x / 2, max_y * 0.7, True)
 ui = pygame.sprite.Group(quit_button, main_text)
+level_1 = Map("game/assets/map-placeholder.png")
+levels = pygame.sprite.Group(level_1)
 
 while running:
     for event in pygame.event.get():
@@ -262,7 +287,7 @@ while running:
     screen.fill("#242424")
 
     if not render_menu():
-
+        levels.draw(screen)
         main_group.draw(screen)
         frog.update()
         block_group.draw(screen)
