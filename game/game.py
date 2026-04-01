@@ -1,5 +1,6 @@
 import pygame
 import math
+import random
 
 # TODO:
 #   move everything when player reaches the camera box edge
@@ -23,7 +24,7 @@ else:
 
 clock = pygame.time.Clock()
 dt = 0
-default_font = pygame.font.Font("assets/jersey10.ttf", 100 * scale)
+default_font = pygame.font.Font("game/assets/jersey10.ttf", 100 * scale)
 
 running = True
 show_menu = False
@@ -60,7 +61,6 @@ class Player(pygame.sprite.Sprite):
     def charge(self):
         if self.charging:
             self.force = min(10, self.force + self.charge_speed * dt)
-            print(f'charging force is: {self.force}')
         else:
             if self.force != 0:
                 self.velocity = self.jump_strength * self.force
@@ -141,7 +141,10 @@ class Player(pygame.sprite.Sprite):
     @y.setter
     def y(self, pos):
         self.rect.y = max(min(pos, max_y - self.rect.height), 0)
-        if self.y == max_y - self.rect.height:
+        if self.rect.colliderect(block_1):
+            self.rect.y = block_1.rect.y - self.rect.height
+            self.is_falling = False
+        elif self.y == max_y - self.rect.height:
             self.is_falling = False
         else:
             self.is_falling = True
@@ -157,7 +160,6 @@ class Block(pygame.sprite.Sprite):
         self.rect.y = y
         self.breakable = breakable
         self.moving = moving
-
 
 class Ground(pygame.sprite.Sprite):
     def __init__(self, x , y):
@@ -205,6 +207,13 @@ class UserInterface(pygame.sprite.Sprite):
             self.mouse_hover = False
         self.__update_text()
 
+def generate_blocks(value):
+    block_X = random.randint(0, max_x)
+    block_Y = random.randint(0, max_y)
+    if value == "x":
+        return block_X
+    else:
+        return block_Y
 
 def render_menu():
         if show_menu:
@@ -219,10 +228,11 @@ def quit_game():
     global running
     running = False
 
-
+block_1 = Block(generate_blocks("x"), generate_blocks("y"), "game/assets/placeholder.png", False, False)
+block_group = pygame.sprite.Group(block_1)
 ground = Ground(0, max_y)
 frog = Player(0, 0, 8)
-main_group = pygame.sprite.Group(ground, frog)
+main_group = pygame.sprite.Group(frog)
 main_text = UserInterface(" RIB.IT ", None, max_x / 2, max_y * 0.4)
 quit_button = UserInterface(" QUIT ", quit_game, max_x / 2, max_y * 0.7, True)
 ui = pygame.sprite.Group(quit_button, main_text)
@@ -255,10 +265,9 @@ while running:
 
         main_group.draw(screen)
         frog.update()
+        block_group.draw(screen)
 
     pygame.display.flip()
     dt = clock.tick(frame_rate) / 1000
 
 pygame.quit()
-
-
