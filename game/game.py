@@ -19,7 +19,7 @@ if fullscreen:
     max_x, max_y = pygame.display.get_desktop_sizes()[0]
     screen = pygame.display.set_mode((max_x, max_y), pygame.FULLSCREEN)
 else:
-    max_x, max_y = 1200, 800
+    max_x, max_y = 500, 800
     screen = pygame.display.set_mode((max_x, max_y))
 
 clock = pygame.time.Clock()
@@ -34,7 +34,9 @@ arrow_img = "game/assets/arrow-right.png"
 player_img = "game/assets/placeholder.png"
 level = "game/assets/map-placeholder.png"
 print(max_x, max_y)
-
+general_x = 0
+general_y = 0
+on_ground = True
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, charge_speed):
@@ -58,6 +60,7 @@ class Player(pygame.sprite.Sprite):
         self.is_falling = True
         self.arrow = pygame.image.load(arrow_img)
         self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
+
 
     def charge(self):
         if self.charging:
@@ -144,6 +147,9 @@ class Player(pygame.sprite.Sprite):
         if self.rect.colliderect(block_1):
             self.rect.y = block_1.rect.y - self.rect.height
             self.is_falling = False
+        elif self.rect.colliderect(block_2):
+            self.rect.y = block_2.rect.y - self.rect.height
+            self.is_falling = False
         elif self.y == max_y - self.rect.height:
             self.is_falling = False
         else:
@@ -173,13 +179,13 @@ class Ground(pygame.sprite.Sprite):
 
 
 class Map(pygame.sprite.Sprite):
-    def __init__(self, level):
+    def __init__(self, level, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(level)
         self.image = pygame.transform.scale_by(self.image, scale)
         self.rect = self.image.get_rect()
-        self.rect.x = 0
-        self.rect.y = max_y - self.rect.height
+        self.rect.x = x
+        self.rect.y = y
 
 
 class UserInterface(pygame.sprite.Sprite):
@@ -221,20 +227,36 @@ class UserInterface(pygame.sprite.Sprite):
 
 def generate_blocks(value):
     block_X = random.randint(0, max_x)
-    block_Y = random.randint(0, max_y)
+    half_y = math.ceil(0.6 * max_y)
+    block_Y = random.randint(half_y, max_y)
     if value == "x":
         return block_X
     else:
         return block_Y
 
 
-def camera_move():
-    if frog.y >= 0.5 * max_y:
+def camera_move(x, y):
+    if y > 0.6 * max_y:
+        pass # change the map and the block position by the difference in general_y - 0.6 * max_y (i think... i just want to commit)
+    if y < 0.3 * max_y: #and if the map position is higher than -2000 - max_y
         pass
-    elif frog.x >= max_x:
-        pass
-    elif frog.x <= 0:
-        pass
+
+last_y = 0
+
+def cords():
+    global last_y
+    global general_x
+    global general_y
+
+    add_y = last_y - frog.y
+
+    general_y = general_y + add_y
+
+    last_y = frog.y
+    if general_y < 0:
+        general_y = 0
+
+    camera_move(general_x, general_y)
 
 
 def render_menu():
@@ -252,14 +274,15 @@ def quit_game():
 
 
 block_1 = Block(generate_blocks("x"), generate_blocks("y"), "game/assets/placeholder.png", False, False)
-block_group = pygame.sprite.Group(block_1)
+block_2 = Block(generate_blocks("x"), generate_blocks("y"), "game/assets/placeholder.png", False, False)
+block_group = pygame.sprite.Group(block_1, block_2)
 ground = Ground(0, max_y)
-frog = Player(0, 0, 8)
+frog = Player(0, max_y - 60, 8)
 main_group = pygame.sprite.Group(frog)
 main_text = UserInterface(" RIB.IT ", None, max_x / 2, max_y * 0.4)
 quit_button = UserInterface(" QUIT ", quit_game, max_x / 2, max_y * 0.7, True)
 ui = pygame.sprite.Group(quit_button, main_text)
-level_1 = Map("game/assets/map-placeholder.png")
+level_1 = Map("game/assets/map-placeholder.png", 0, -2000 - max_y)
 levels = pygame.sprite.Group(level_1)
 
 while running:
@@ -287,6 +310,7 @@ while running:
     screen.fill("#242424")
 
     if not render_menu():
+        cords()
         levels.draw(screen)
         main_group.draw(screen)
         frog.update()
