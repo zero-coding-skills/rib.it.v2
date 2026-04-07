@@ -38,8 +38,18 @@ general_x = 0
 general_y = 0
 on_ground = True
 
+
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, charge_speed):
+    """
+    Player object used for creating the player, managing position and everything player-wise.
+    """
+    def __init__(self, x: int, y: int, charge_speed: float):
+        """
+        create new player object
+        :param x: x position on screen
+        :param y: y position on screen
+        :param charge_speed: how long it takes to charge a full jump
+        """
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(player_img)
         self.image = pygame.transform.scale_by(self.image, scale)
