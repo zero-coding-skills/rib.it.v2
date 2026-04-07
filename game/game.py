@@ -109,9 +109,10 @@ class Player(pygame.sprite.Sprite):
 
     def update(self):
         if not self.is_falling:
+            self.speed_y = 0
+        if last_y == frog.y:
             blit_arrow, arrow_rect = self.rotate_arrow([self.x + self.rect.width * 0.5, self.y - scale * 5])
             screen.blit(blit_arrow, arrow_rect)
-            self.speed_y = 0
         self.charge()
         self.move()
 
@@ -247,6 +248,7 @@ def cords():
     global last_y
     global general_x
     global general_y
+
 
     add_y = last_y - frog.y
 
