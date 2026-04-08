@@ -93,6 +93,7 @@ class Player(pygame.sprite.Sprite):
             self.speed_y += -self.gravity * dt
 
         self.y -= self.speed_y * scale * dt
+        self.check_if_falling()
         self.x += self.speed_x * scale * dt
 
         if self.speed_x > 0:
@@ -125,13 +126,27 @@ class Player(pygame.sprite.Sprite):
         rect.center = pivot
         return image, rect
 
+    def check_if_falling(self):
+        """
+        Determines if player is falling based on the block under it.
+        """
+        collision = pygame.Rect((self.rect.x, self.rect.y), (self.rect.width, self.rect.height + 1))
+        for block in block_group.sprites():
+            if collision.colliderect(block):
+                self.rect.y = block.rect.y - self.rect.height
+                self.is_falling = False
+                return
+        if self.y == max_y - self.rect.height:
+            self.is_falling = False
+        else:
+            self.is_falling = True
+
     def update(self):
         """
         Call all other object functions to update its state.
         """
         if not self.is_falling:
             self.speed_y = 0
-        if last_y == frog.y:
             blit_arrow, arrow_rect = self.rotate_arrow((int(self.x + self.rect.width * 0.5), self.y - scale * 5))
             screen.blit(blit_arrow, arrow_rect)
         self.charge()
@@ -165,17 +180,6 @@ class Player(pygame.sprite.Sprite):
     @y.setter
     def y(self, pos):
         self.rect.y = max(min(pos, max_y - self.rect.height), 0)
-        # determine if player is falling
-        if self.rect.colliderect(block_1):
-            self.rect.y = block_1.rect.y - self.rect.height
-            self.is_falling = False
-        elif self.rect.colliderect(block_2):
-            self.rect.y = block_2.rect.y - self.rect.height
-            self.is_falling = False
-        elif self.y == max_y - self.rect.height:
-            self.is_falling = False
-        else:
-            self.is_falling = True
 
 
 class Block(pygame.sprite.Sprite):
@@ -225,15 +229,17 @@ class UserInterface(pygame.sprite.Sprite):
     """
     Class used for handling GUI elements such as text and buttons.
     """
-    def __init__(self, text: str, on_click: Callable | None, x: int | float, y: int | float, has_border: bool = False, font: pygame.font.Font = default_font):
+    def __init__(self, text: str, x: int | float, y: int | float, ui_type: str, *, has_border: bool = False, font: pygame.font.Font = default_font, on_click: Callable | None = None, segments: int = 0):
         """
         Create new UI element.
         :param text: text to display
-        :param on_click: function to execute when clicked
+        :param ui_type: what type of UI the Object is (text, button, slider)
         :param x: x position on screen
         :param y: y position on screen
         :param has_border: whether to render a border
         :param font: which font to use for text
+        :param on_click: function to execute when clicked
+        :param segments: number of slider values (set 0 for infinite)
         """
         pygame.sprite.Sprite.__init__(self)
 
@@ -244,14 +250,23 @@ class UserInterface(pygame.sprite.Sprite):
         self.bg = "#242424"
         self.has_border = has_border
         self.x, self.y = x, y
-        self.__update_text()
+        self.image = self.font.render(self.text, True, self.color, self.bg)
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x, self.y)
         self.on_click = on_click
+        self.element = ui_type
+        self.segments = segments
+        self.value = None
 
-    def __update_text(self):
+    def update_button(self):
         """
-        Update the UI element based on current parameters.
-        Can change color, size and text
+        Update the button element based on current parameters.
+        Can change color, size and text.
         """
+        if self.mouse_hover:
+            self.color = "#60735d"
+        else:
+            self.color = "#92ad8d"
         self.image = self.font.render(self.text, True, self.color, self.bg)
         if self.has_border:
             pygame.draw.rect(self.image, self.color, self.image.get_rect(), 4)
@@ -267,17 +282,21 @@ class UserInterface(pygame.sprite.Sprite):
         :param mouse_pos: current mouse position
         :param mouse_click: state of mouse button 0 (left click)
         """
-        if self.rect.collidepoint(mouse_pos) and self.on_click is not None:
+        if self.rect.collidepoint(mouse_pos):
             self.mouse_hover = True
-            # self.font.set_underline(True)
-            self.color = "#60735d"
-            if mouse_click:
+            if mouse_click and self.on_click is not None:
                 self.on_click()
         else:
-            # self.font.set_underline(False)
-            self.color = "#92ad8d"
             self.mouse_hover = False
-        self.__update_text()
+        if self.element == "slider":
+            self.update_slider(mouse_click, mouse_pos)
+        elif self.element == "button":
+            self.update_button()
+
+    def update_slider(self, mouse_click, mouse_pos):
+        if self.mouse_hover and mouse_click:
+            self.value = (mouse_pos[0] - self.x) / self.rect.width
+
 
 
 def generate_blocks(value):
@@ -315,7 +334,11 @@ def cords():
     camera_move(general_x, general_y)
 
 
-def render_menu():
+def render_menu() -> bool:
+    """
+    Draw UI items to screen if game is paused.
+    :return: True if menu has been rendered, False if not
+    """
     if show_menu:
         ui.draw(screen)
         for item in ui:
@@ -338,8 +361,8 @@ block_group = pygame.sprite.Group(block_1, block_2)
 ground = Ground(0, max_y)
 frog = Player(0, max_y - 60, 8)
 main_group = pygame.sprite.Group(frog)
-main_text = UserInterface(" RIB.IT ", None, max_x / 2, max_y * 0.4)
-quit_button = UserInterface(" QUIT ", quit_game, max_x / 2, max_y * 0.7, True)
+main_text = UserInterface(" RIB.IT ", max_x / 2, max_y * 0.4, "text")
+quit_button = UserInterface(" QUIT ", max_x / 2, max_y * 0.7, "button", has_border=True, on_click=quit_game)
 ui = pygame.sprite.Group(quit_button, main_text)
 level_1 = Map(f'{file_location}assets/map-placeholder.png', 0, -2000 - max_y)
 levels = pygame.sprite.Group(level_1)
