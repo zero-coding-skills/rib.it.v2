@@ -1,6 +1,5 @@
 import math
 import random
-from sqlite3 import adapters
 import pygame
 from collections.abc import Callable
 
@@ -63,6 +62,7 @@ class Player(pygame.sprite.Sprite):
         self.drag = 500
         self.charging = False
         self.charge_speed = charge_speed
+        self.pre_pos = (0, 0)
         self.jump_angle = 90
         self.is_falling = True
         self.arrow = pygame.image.load(arrow_right)
@@ -73,6 +73,7 @@ class Player(pygame.sprite.Sprite):
         Updates the force used to calculate jump height when holding space.
         When released, set velocity of player to jump strength * force.
         """
+        self.pre_pos = (self.rect.x, self.rect.y)
         if self.charging:
             self.force = min(10, self.force + self.charge_speed * dt)
         else:
@@ -94,8 +95,8 @@ class Player(pygame.sprite.Sprite):
             self.speed_y += -self.gravity * dt
 
         self.y -= self.speed_y * scale * dt
-        self.check_if_falling()
         self.x += self.speed_x * scale * dt
+        self.collision()
 
         if self.speed_x > 0:
             if self.speed_x < self.drag * dt or not self.is_falling:
@@ -127,16 +128,27 @@ class Player(pygame.sprite.Sprite):
         rect.center = pivot
         return image, rect
 
-    def check_if_falling(self):
+    def collision(self):
         """
-        Determines if player is falling based on the block under it.
+        Checks player collision with other blocks.
+        Sets player 'is_falling' if there is a block under it.
         """
-        collision = pygame.Rect((self.rect.x, self.rect.y), (self.rect.width, self.rect.height + 1))
+        col_rect = pygame.Rect((self.rect.x, self.rect.y), (self.rect.width, self.rect.height + 1))
         for block in block_group.sprites():
-            if collision.colliderect(block):
-                self.rect.y = block.rect.y - self.rect.height
-                self.is_falling = False
-                return
+            if col_rect.colliderect(block):
+                if self.pre_pos[1] + self.rect.height <= block.rect.y:
+                    self.y = block.rect.y - self.rect.height
+                    self.is_falling = False
+                    return
+                if self.pre_pos[0] + self.rect.width <= block.rect.x:
+                    self.x = block.rect.x - self.rect.width
+                    self.speed_x = 0
+                if self.pre_pos[0] >= block.rect.x + block.rect.width:
+                    self.x = block.rect.x + block.rect.width
+                    self.speed_x = 0
+                if self.pre_pos[1] >= block.rect.y + block.rect.height:
+                    self.y = block.rect.y + block.rect.height
+                    self.speed_y *= 0.2
         if self.y == max_y - self.rect.height:
             self.is_falling = False
         else:
@@ -357,7 +369,7 @@ def generate_level():
         generate_level()
     else:
         lines = 0
-generate_level()
+        generate_level()
 
 def camera_move(x, y):
     if y > 0.6 * max_y:
