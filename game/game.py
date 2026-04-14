@@ -256,7 +256,8 @@ class UserInterface(pygame.sprite.Sprite):
         self.on_click = on_click
         self.element = ui_type
         self.segments = segments
-        self.value = None
+        self.value = 0
+        self.bar = None
 
     def update_button(self):
         """
@@ -288,6 +289,8 @@ class UserInterface(pygame.sprite.Sprite):
                 self.on_click()
         else:
             self.mouse_hover = False
+        if self.has_border:
+            pygame.draw.rect(self.image, self.color, self.image.get_rect(), 4)
         if self.element == "slider":
             self.update_slider(mouse_click, mouse_pos)
         elif self.element == "button":
@@ -296,7 +299,7 @@ class UserInterface(pygame.sprite.Sprite):
     def update_slider(self, mouse_click, mouse_pos):
         if self.mouse_hover and mouse_click:
             self.value = (mouse_pos[0] - self.x) / self.rect.width
-
+        pygame.draw.rect(self.image, self.color, (self.x + self.rect.width * self.value, self.y, self.x + self.rect.width * self.value + 20 * scale, self.y + self.rect.height))
 
 
 def generate_blocks(value):
@@ -363,7 +366,8 @@ frog = Player(0, max_y - 60, 8)
 main_group = pygame.sprite.Group(frog)
 main_text = UserInterface(" RIB.IT ", max_x / 2, max_y * 0.4, "text")
 quit_button = UserInterface(" QUIT ", max_x / 2, max_y * 0.7, "button", has_border=True, on_click=quit_game)
-ui = pygame.sprite.Group(quit_button, main_text)
+volume_slider = UserInterface("Volume", max_x / 2, max_y * 0.2, "slider", has_border=True)
+ui = pygame.sprite.Group(quit_button, main_text, volume_slider)
 level_1 = Map(f'{file_location}assets/map-placeholder.png', 0, -2000 - max_y)
 levels = pygame.sprite.Group(level_1)
 
