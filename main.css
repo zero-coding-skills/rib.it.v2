@@ -9,6 +9,7 @@ html::after {
     inset: 0;
     position: fixed;
     pointer-events: none;
+
 }
 
 body {
