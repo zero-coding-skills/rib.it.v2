@@ -18,8 +18,8 @@ body {
 }
 
 button {
-    color: antiquewhite;
-    border: 5px solid antiquewhite;
+    color: #e3ffda;
+    border: 5px solid #e3ffda;
     background-color: #242424;
     box-shadow: 5px 5px 0 0px #0a1109;
     text-transform: uppercase;
