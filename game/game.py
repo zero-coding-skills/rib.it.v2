@@ -283,7 +283,7 @@ class UserInterface(pygame.sprite.Sprite):
             self.color = "#92ad8d"
         self.image = self.font.render(self.text, True, self.color, self.bg)
         if self.has_border:
-            pygame.draw.rect(self.image, self.color, self.image.get_rect(), 4)
+            pygame.draw.rect(self.image, self.color, self.image.get_rect(), 2 * scale)
         if self.mouse_hover:
             self.image = pygame.transform.scale_by(self.image, 0.95)
         self.rect = self.image.get_rect()
@@ -302,8 +302,6 @@ class UserInterface(pygame.sprite.Sprite):
                 self.on_click()
         else:
             self.mouse_hover = False
-        if self.has_border:
-            pygame.draw.rect(self.image, self.color, self.image.get_rect(), 4)
         if self.element == "slider":
             self.update_slider(mouse_click, mouse_pos)
         elif self.element == "button":
@@ -312,7 +310,11 @@ class UserInterface(pygame.sprite.Sprite):
     def update_slider(self, mouse_click, mouse_pos):
         if self.mouse_hover and mouse_click:
             self.value = (mouse_pos[0] - self.x) / self.rect.width
-        pygame.draw.rect(self.image, self.color, (self.x + self.rect.width * self.value, self.y, self.x + self.rect.width * self.value + 20 * scale, self.y + self.rect.height))
+        self.image = pygame.surface.Surface((200 * scale, 50 * scale))
+        self.rect.center = (self.x, self.y)
+        if self.has_border:
+            pygame.draw.rect(self.image, self.color, self.image.get_rect(), 2 * scale)
+        pygame.draw.rect(self.image, self.color, (self.x + self.rect.width * self.value, self.y - self.rect.height, 20 * scale, self.rect.height * scale))
 
 
 def generate_blocks(value):
