@@ -1,5 +1,6 @@
-import pygame
 import math
+import random
+import pygame
 
 # TODO:
 #   move everything when player reaches the camera box edge
@@ -7,6 +8,7 @@ import math
 #   more menu options
 #   music and sfx
 #   graphics
+#   reset angle of arrow upon hitting the ground
 
 pygame.init()
 
@@ -17,7 +19,7 @@ if fullscreen:
     max_x, max_y = pygame.display.get_desktop_sizes()[0]
     screen = pygame.display.set_mode((max_x, max_y), pygame.FULLSCREEN)
 else:
-    max_x, max_y = 1200, 800
+    max_x, max_y = 500, 800
     screen = pygame.display.set_mode((max_x, max_y))
 
 clock = pygame.time.Clock()
@@ -28,13 +30,16 @@ running = True
 show_menu = False
 frame_rate = 60
 
-arrow_img = "game/assets/arrow.png"
+arrow_img = "game/assets/arrow-right.png"
 player_img = "game/assets/placeholder.png"
+level = "game/assets/map-placeholder.png"
 print(max_x, max_y)
-
+general_x = 0
+general_y = 0
+on_ground = True
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, gravity):
+    def __init__(self, x, y, charge_speed):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(player_img)
         self.image = pygame.transform.scale_by(self.image, scale)
@@ -42,54 +47,72 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
-        self.gravity = 300
-        self.max_velocity = 400 * scale
-        self.jump_strength = 130
+        self.gravity = 1000
         self.velocity = 0
-        self.falling_time = 0
-        self.previous_time = clock.get_time()
+        self.jump_strength = 65
+        self.speed_y = 0
+        self.speed_x = 0
         self.force = 0
+        self.drag = 500
         self.charging = False
+        self.charge_speed = charge_speed
         self.jump_angle = 90
         self.is_falling = True
         self.arrow = pygame.image.load(arrow_img)
         self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
 
+
     def charge(self):
         if self.charging:
-            self.force = min(10, self.force + 5 * dt)
-            print(f'charging force is: {self.force}')
+            self.force = min(10, self.force + self.charge_speed * dt)
         else:
             if self.force != 0:
                 self.velocity = self.jump_strength * self.force
-                print(f'final force is: {self.force}')
+                print(f"final force is: {self.force}")
             self.force = 0
 
-
     def move(self):
-        self.velocity = max(self.velocity - 0.5 * self.gravity * self.falling_time ** 2, - self.max_velocity)
-        if self.velocity > 0:
-            self.x, self.y = self.x + self.velocity * math.cos(self.angle * math.pi / 180) * dt, self.y - self.velocity * math.sin(self.angle * math.pi / 180) * dt
-        else:
-            self.y -= self.velocity * dt
+        self.speed_y += self.velocity * math.sin(math.radians(self.angle))
+        self.speed_x += self.velocity * math.cos(math.radians(self.angle))
+        self.velocity = 0
+        if self.is_falling:
+            self.speed_y += -self.gravity * dt
+
+        self.y -= self.speed_y * scale * dt
+        self.x += self.speed_x * scale * dt
+
+        if self.speed_x > 0:
+            if self.speed_x < self.drag * dt or not self.is_falling:
+                self.speed_x = 0
+            else:
+                self.speed_x -= (self.drag * dt * math.fabs(math.cos(math.radians(self.angle))) ** 1.5)
+        elif self.speed_x < 0:
+            if -self.speed_x < self.drag * dt or not self.is_falling:
+                self.speed_x = 0
+            else:
+                self.speed_x += (self.drag * dt * math.fabs(math.cos(math.radians(self.angle))) ** 1.5)
 
     def rotate_arrow(self, pivot):
-        # rotate the leg image around the pivot
+        # rotate the arrow image around the pivot
         image = pygame.Surface((self.arrow.get_width(), self.arrow.get_height() * 2), pygame.SRCALPHA)
         image.blit(self.arrow, (0, 0))
         image = pygame.transform.rotozoom(image, self.angle - 90, 1)
         rect = image.get_rect()
+        if self.angle > 90:
+            self.arrow = pygame.image.load("game/assets/arrow-left.png")
+            self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
+        else:
+            self.arrow = pygame.image.load(arrow_img)
+            self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
         rect.center = pivot
         return image, rect
 
     def update(self):
-        if self.is_falling:  # if player is falling
-            self.falling_time += clock.get_time() - self.previous_time
-        else:
-            self.falling_time = 0
-            blit_arrow, arrow_rect = self.rotate_arrow([self.x + self.rect.width * scale * 0.25, self.y - scale * 5])
+        if not self.is_falling:
+            self.speed_y = 0
+        if last_y == frog.y:
+            blit_arrow, arrow_rect = self.rotate_arrow([self.x + self.rect.width * 0.5, self.y - scale * 5])
             screen.blit(blit_arrow, arrow_rect)
-        self.previous_time = clock.get_time()
         self.charge()
         self.move()
 
@@ -103,7 +126,8 @@ class Player(pygame.sprite.Sprite):
 
     @angle.setter
     def angle(self, value):
-        self.jump_angle = min(max(value, 0), 180)
+        if not self.is_falling:
+            self.jump_angle = min(max(value, 0), 180)
 
     @property
     def x(self):
@@ -111,7 +135,8 @@ class Player(pygame.sprite.Sprite):
 
     @x.setter
     def x(self, pos):
-        self.rect.x = max(min(pos, 0.6 * max_x - self.rect.width), 0.4 * max_x)
+        # self.rect.x = max(min(pos, 0.6 * max_x - self.rect.width), 0.4 * max_x)
+        self.rect.x = max(min(pos, max_x - self.rect.width), 0)
 
     @property
     def y(self):
@@ -119,8 +144,14 @@ class Player(pygame.sprite.Sprite):
 
     @y.setter
     def y(self, pos):
-        self.rect.y = max(min(pos, 0.6 * max_y - self.rect.height), 0.4 * max_y)
-        if self.y == 0.6 * max_y - self.rect.height:
+        self.rect.y = max(min(pos, max_y - self.rect.height), 0)
+        if self.rect.colliderect(block_1):
+            self.rect.y = block_1.rect.y - self.rect.height
+            self.is_falling = False
+        elif self.rect.colliderect(block_2):
+            self.rect.y = block_2.rect.y - self.rect.height
+            self.is_falling = False
+        elif self.y == max_y - self.rect.height:
             self.is_falling = False
         else:
             self.is_falling = True
@@ -139,9 +170,19 @@ class Block(pygame.sprite.Sprite):
 
 
 class Ground(pygame.sprite.Sprite):
-    def __init__(self, x , y):
+    def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((max_x, 10))
+        self.image = pygame.transform.scale_by(self.image, scale)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+
+class Map(pygame.sprite.Sprite):
+    def __init__(self, level, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = pygame.image.load(level)
         self.image = pygame.transform.scale_by(self.image, scale)
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -185,13 +226,48 @@ class UserInterface(pygame.sprite.Sprite):
         self.__update_text()
 
 
+def generate_blocks(value):
+    block_X = random.randint(0, max_x)
+    half_y = math.ceil(0.6 * max_y)
+    block_Y = random.randint(half_y, max_y)
+    if value == "x":
+        return block_X
+    else:
+        return block_Y
+
+
+def camera_move(x, y):
+    if y > 0.6 * max_y:
+        pass # change the map and the block position by the difference in general_y - 0.6 * max_y (i think... i just want to commit)
+    if y < 0.3 * max_y: #and if the map position is higher than -2000 - max_y
+        pass
+
+last_y = 0
+
+def cords():
+    global last_y
+    global general_x
+    global general_y
+
+
+    add_y = last_y - frog.y
+
+    general_y = general_y + add_y
+
+    last_y = frog.y
+    if general_y < 0:
+        general_y = 0
+
+    camera_move(general_x, general_y)
+
+
 def render_menu():
-        if show_menu:
-            ui.draw(screen)
-            for item in ui:
-                item.update(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0])
-            return True
-        return False
+    if show_menu:
+        ui.draw(screen)
+        for item in ui:
+            item.update(pygame.mouse.get_pos(), pygame.mouse.get_pressed()[0])
+        return True
+    return False
 
 
 def quit_game():
@@ -199,12 +275,17 @@ def quit_game():
     running = False
 
 
+block_1 = Block(generate_blocks("x"), generate_blocks("y"), "game/assets/placeholder.png", False, False)
+block_2 = Block(generate_blocks("x"), generate_blocks("y"), "game/assets/placeholder.png", False, False)
+block_group = pygame.sprite.Group(block_1, block_2)
 ground = Ground(0, max_y)
-frog = Player(0, 0, 1000)
-main_group = pygame.sprite.Group(ground, frog)
+frog = Player(0, max_y - 60, 8)
+main_group = pygame.sprite.Group(frog)
 main_text = UserInterface(" RIB.IT ", None, max_x / 2, max_y * 0.4)
 quit_button = UserInterface(" QUIT ", quit_game, max_x / 2, max_y * 0.7, True)
 ui = pygame.sprite.Group(quit_button, main_text)
+level_1 = Map("game/assets/map-placeholder.png", 0, -2000 - max_y)
+levels = pygame.sprite.Group(level_1)
 
 while running:
     for event in pygame.event.get():
@@ -231,13 +312,13 @@ while running:
     screen.fill("#242424")
 
     if not render_menu():
-
+        cords()
+        levels.draw(screen)
         main_group.draw(screen)
         frog.update()
+        block_group.draw(screen)
 
     pygame.display.flip()
     dt = clock.tick(frame_rate) / 1000
 
 pygame.quit()
-
-
