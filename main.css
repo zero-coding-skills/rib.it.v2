@@ -18,16 +18,16 @@ body {
     background-repeat: no-repeat;
     height: 100vh;
     color: rgb(255, 255, 255);
-    font-family: Pixels;
+    font-family: Pixels, serif;
 }
 
 button {
     color: #e3ffda;
     border: 5px solid #e3ffda;
     background-color: #242424;
-    box-shadow: 5px 5px 0 0px #0a1109;
+    box-shadow: 5px 5px 0 0 #0a1109;
     text-transform: uppercase;
-    font-family: Pixels;
+    font-family: Pixels, serif;
     font-size: 30px;
     cursor: pointer;
     width: 130px;
@@ -37,7 +37,7 @@ button {
 
 button:hover {
     background-color: #171717;
-    box-shadow: 0px 0px 0 0px #0a1109;
+    box-shadow: 0 0 0 0 #0a1109;
 }
 
 h1 {
@@ -72,7 +72,7 @@ h1 {
     transform: translate(-50%, -50%);
     background-color: #2a3028;
     border: 5px solid #e3ffda;
-    box-shadow: 5px 5px 0 0px #0a1109;
+    box-shadow: 5px 5px 0 0 #0a1109;
 }
 
 .gray {

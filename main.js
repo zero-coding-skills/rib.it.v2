@@ -1,8 +1,8 @@
 last_val = 0;
 
 function show(value) {
-    var menus = document.getElementById("menus")
-    var buttons = document.getElementById("buttons")
+    let menus = document.getElementById("menus");
+    let buttons = document.getElementById("buttons");
 
     if (menus.style.opacity == 0) {
         menus.style.opacity = 1;
