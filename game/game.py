@@ -27,7 +27,7 @@ frame_rate = 60
 
 arrow_right = f'{file_location}assets/arrow-right.png'
 arrow_left = f'{file_location}assets/arrow-left.png'
-player_img = f'{file_location}assets/placeholder.png'
+player_img = f'{file_location}assets/frogo.png'
 level = f'{file_location}assets/map-placeholder.png'
 print(max_x, max_y)
 general_x = 0
@@ -427,7 +427,7 @@ main_text = UserInterface(" RIB.IT ", max_x / 2, max_y * 0.4, "text")
 quit_button = UserInterface(" QUIT ", max_x / 2, max_y * 0.7, "button", has_border=True, on_click=quit_game)
 volume_slider = UserInterface("Volume", max_x / 2, max_y * 0.2, "slider", has_border=True)
 ui = pygame.sprite.Group(quit_button, main_text, volume_slider)
-level_1 = Map(f'{file_location}assets/map-placeholder.png', 0, -2000 - max_y)
+level_1 = Map(level, 0, -2000 - max_y)
 levels = pygame.sprite.Group(level_1)
 
 while running:
