@@ -1,7 +1,7 @@
 import math
 import random
-from sqlite3 import adapters
 import pygame
+import os
 
 # TODO:
 #   move everything when player reaches the camera box edge
@@ -20,12 +20,13 @@ if fullscreen:
     max_x, max_y = pygame.display.get_desktop_sizes()[0]
     screen = pygame.display.set_mode((max_x, max_y), pygame.FULLSCREEN)
 else:
-    max_x, max_y = 500, 800
+    max_x, max_y = 750, 800
     screen = pygame.display.set_mode((max_x, max_y))
 
 clock = pygame.time.Clock()
 dt = 0
 default_font = pygame.font.Font("game/assets/jersey10.ttf", 100 * scale)
+os.remove("game/assets/level.txt")
 
 running = True
 show_menu = False
@@ -61,7 +62,6 @@ class Player(pygame.sprite.Sprite):
         self.is_falling = True
         self.arrow = pygame.image.load(arrow_img)
         self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
-
 
     def charge(self):
         if self.charging:
@@ -146,11 +146,10 @@ class Player(pygame.sprite.Sprite):
     @y.setter
     def y(self, pos):
         self.rect.y = max(min(pos, max_y - self.rect.height), 0)
-        if self.rect.colliderect(block_1):
-            self.rect.y = block_1.rect.y - self.rect.height
-            self.is_falling = False
-        elif self.rect.colliderect(block_2):
-            self.rect.y = block_2.rect.y - self.rect.height
+        standing_on = pygame.sprite.spritecollide(self, blocks, False)
+        if standing_on:
+            block = standing_on[0]
+            frog.rect.bottom = block.rect.top
             self.is_falling = False
         elif self.y == max_y - self.rect.height:
             self.is_falling = False
@@ -227,29 +226,24 @@ class UserInterface(pygame.sprite.Sprite):
         self.__update_text()
 
 
-def generate_blocks(value):
-    block_X = random.randint(0, max_x)
-    half_y = math.ceil(0.6 * max_y)
-    block_Y = random.randint(half_y, max_y)
-    if value == "x":
-        return block_X
-    else:
-        return block_Y
-
 lines = 0
 last_position = 3
+line = 0
+char_count = 0
+blocks = pygame.sprite.Group()
 
 def generate_level():
     global lines
     global last_position
+    global line
+    global char_count
 
+    block_image = pygame.image.load(player_img).get_rect()
     line = []
     block_count = 0
-    char_count = level_1.rect.width // (3 * scale)
-    line_count = level_1.rect.height // (16 * scale)
+    char_count = max_x // block_image.width // scale #level_1.rect.width // block_image.width // scale
+    line_count = max_y // block_image.height // scale #level_1.rect.height // block_image.height // scale
     position = random.randint(0, 2)
-
-
 
     if position == 1:
         line.append("-----")
@@ -280,8 +274,41 @@ def generate_level():
     if lines < line_count:
         generate_level()
     else:
+        line = lines
         lines = 0
-generate_level()
+        read_n_render()
+
+        print("char count: " + str(char_count), "level width: " + str(level_1.rect.width), "block width: " + str(block_image.width), "block width scaled: " + str(block_image.width * scale))
+        print("line count: " + str(line_count), "level height: " + str(level_1.rect.height), "block height: " + str(block_image.height), "block height scaled: " + str(block_image.height * scale))
+
+def read_n_render():
+    global line
+    current_char = 1
+
+    with open("game/assets/level.txt", "r") as file:
+        line = 1
+
+        while True:
+            char = file.read(1)
+            if not char:
+                break
+            if current_char >= char_count:
+                current_char = 1
+                line += 1
+
+
+            if char == "x":
+                sprite = pygame.sprite.Sprite()
+                sprite.image = pygame.image.load(player_img)
+                sprite.image = pygame.transform.scale_by(sprite.image, scale)
+                sprite.rect = sprite.image.get_rect()
+                sprite.rect.x = current_char * sprite.rect.width
+                sprite.rect.y = line * sprite.rect.height
+                block = sprite
+                blocks.add(block)
+
+            current_char += 1
+
 
 def camera_move(x, y):
     if y > 0.6 * max_y:
@@ -322,9 +349,6 @@ def quit_game():
     running = False
 
 
-block_1 = Block(generate_blocks("x"), generate_blocks("y"), "game/assets/placeholder.png", False, False)
-block_2 = Block(generate_blocks("x"), generate_blocks("y"), "game/assets/placeholder.png", False, False)
-block_group = pygame.sprite.Group(block_1, block_2)
 ground = Ground(0, max_y)
 frog = Player(0, max_y - 60, 8)
 main_group = pygame.sprite.Group(frog)
@@ -333,6 +357,8 @@ quit_button = UserInterface(" QUIT ", quit_game, max_x / 2, max_y * 0.7, True)
 ui = pygame.sprite.Group(quit_button, main_text)
 level_1 = Map("game/assets/map-placeholder.png", 0, -2000 - max_y)
 levels = pygame.sprite.Group(level_1)
+
+generate_level()
 
 while running:
     for event in pygame.event.get():
@@ -363,7 +389,7 @@ while running:
         levels.draw(screen)
         main_group.draw(screen)
         frog.update()
-        block_group.draw(screen)
+        blocks.draw(screen)
 
     pygame.display.flip()
     dt = clock.tick(frame_rate) / 1000
