@@ -33,6 +33,7 @@ arrow_right = f'{file_location}assets/arrow-right.png'
 arrow_left = f'{file_location}assets/arrow-left.png'
 player_img = f'{file_location}assets/frogo.png'
 level = f'{file_location}assets/map-placeholder.png'
+block_img = f'{file_location}assets/block.png'
 print(max_x, max_y)
 general_x = 0
 general_y = 0
@@ -392,7 +393,7 @@ def read_n_render():
 
             if char == "x":
                 sprite = pygame.sprite.Sprite()
-                sprite.image = pygame.image.load(player_img)
+                sprite.image = pygame.image.load(block_img)
                 sprite.image = pygame.transform.scale_by(sprite.image, scale)
                 sprite.rect = sprite.image.get_rect()
                 sprite.rect.x = current_char * sprite.rect.width
