@@ -9,7 +9,7 @@ pygame.init()
 
 scale = 2  # scales the size of everything
 fullscreen = False
-file_location = ""
+file_location = "game/"
 
 if fullscreen:
     max_x, max_y = pygame.display.get_desktop_sizes()[0]
