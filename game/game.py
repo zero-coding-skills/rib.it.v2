@@ -21,7 +21,9 @@ else:
 clock = pygame.time.Clock()
 dt = 0
 default_font = pygame.font.Font(f'{file_location}assets/jersey10.ttf', 100 * scale)
-os.remove("game/assets/level.txt")
+if os.path.exists(f'{file_location}assets/level.txt'):
+    os.remove(f'{file_location}assets/level.txt')
+
 
 running = True
 show_menu = False
@@ -350,12 +352,12 @@ def generate_level():
             line.append("-")
 
     if lines == 0:
-        with open("game/assets/level.txt", "a") as file:
+        with open(f'{file_location}assets/level.txt', "a") as file:
             file.write("------xxx------\n")
         lines += 1
     else:
         if last_position != position:
-            with open("game/assets/level.txt", "a") as file:
+            with open(f'{file_location}assets/level.txt', "a") as file:
                 file.write(''.join(line) + "\n")
             lines += 1
 
@@ -376,7 +378,7 @@ def read_n_render():
     global line
     current_char = 1
 
-    with open("game/assets/level.txt", "r") as file:
+    with open(f'{file_location}assets/level.txt', "r") as file:
         line = 1
 
         while True:
