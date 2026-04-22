@@ -13,14 +13,17 @@ html::after {
 }
 
 body {
-    background-color: #242424;
+    background-image: url("content/wallp.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 100vh;
     color: rgb(255, 255, 255);
     font-family: Pixels;
 }
 
 button {
-    color: #92ad8d;
-    border: 5px solid #92ad8d;
+    color: #e3ffda;
+    border: 5px solid #e3ffda;
     background-color: #242424;
     box-shadow: 5px 5px 0 0px #0a1109;
     text-transform: uppercase;
@@ -43,7 +46,7 @@ h1 {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -100%);
-    color: #92ad8d;
+    color: #e3ffda;
     text-transform: uppercase;
     font-size: 130px;
     width: max-content;
@@ -68,7 +71,7 @@ h1 {
     left: 50%;
     transform: translate(-50%, -50%);
     background-color: #2a3028;
-    border: 5px solid #92ad8d;
+    border: 5px solid #e3ffda;
     box-shadow: 5px 5px 0 0px #0a1109;
 }
 

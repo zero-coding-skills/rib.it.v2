@@ -1,47 +1,53 @@
 import math
 import random
 import pygame
+from collections.abc import Callable
 import os
 
-# TODO:
-#   move everything when player reaches the camera box edge
-#   map grid
-#   more menu options
-#   music and sfx
-#   graphics
-#   reset angle of arrow upon hitting the ground
 
 pygame.init()
 
 scale = 2  # scales the size of everything
 fullscreen = False
+file_location = ""
 
 if fullscreen:
     max_x, max_y = pygame.display.get_desktop_sizes()[0]
     screen = pygame.display.set_mode((max_x, max_y), pygame.FULLSCREEN)
 else:
-    max_x, max_y = 750, 800
+    max_x, max_y = 500, 800
     screen = pygame.display.set_mode((max_x, max_y))
 
 clock = pygame.time.Clock()
 dt = 0
-default_font = pygame.font.Font("game/assets/jersey10.ttf", 100 * scale)
+default_font = pygame.font.Font(f'{file_location}assets/jersey10.ttf', 100 * scale)
 os.remove("game/assets/level.txt")
 
 running = True
 show_menu = False
 frame_rate = 60
 
-arrow_img = "game/assets/arrow-right.png"
-player_img = "game/assets/placeholder.png"
-level = "game/assets/map-placeholder.png"
+arrow_right = f'{file_location}assets/arrow-right.png'
+arrow_left = f'{file_location}assets/arrow-left.png'
+player_img = f'{file_location}assets/frogo.png'
+level = f'{file_location}assets/map-placeholder.png'
 print(max_x, max_y)
 general_x = 0
 general_y = 0
 on_ground = True
 
+
 class Player(pygame.sprite.Sprite):
-    def __init__(self, x, y, charge_speed):
+    """
+    Player object used for creating the player, managing position and everything player-wise.
+    """
+    def __init__(self, x: int | float, y: int | float, charge_speed: int | float):
+        """
+        Create new player object.
+        :param x: x position on screen
+        :param y: y position on screen
+        :param charge_speed: how long it takes to charge a full jump
+        """
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(player_img)
         self.image = pygame.transform.scale_by(self.image, scale)
@@ -58,12 +64,18 @@ class Player(pygame.sprite.Sprite):
         self.drag = 500
         self.charging = False
         self.charge_speed = charge_speed
+        self.pre_pos = (0, 0)
         self.jump_angle = 90
         self.is_falling = True
-        self.arrow = pygame.image.load(arrow_img)
+        self.arrow = pygame.image.load(arrow_right)
         self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
 
     def charge(self):
+        """
+        Updates the force used to calculate jump height when holding space.
+        When released, set velocity of player to jump strength * force.
+        """
+        self.pre_pos = (self.rect.x, self.rect.y)
         if self.charging:
             self.force = min(10, self.force + self.charge_speed * dt)
         else:
@@ -73,6 +85,11 @@ class Player(pygame.sprite.Sprite):
             self.force = 0
 
     def move(self):
+        """
+        Calculate the vertical and horizontal speed.
+        Calculate gravity and air resistance.
+        Move the player by speed in both axis.
+        """
         self.speed_y += self.velocity * math.sin(math.radians(self.angle))
         self.speed_x += self.velocity * math.cos(math.radians(self.angle))
         self.velocity = 0
@@ -81,6 +98,7 @@ class Player(pygame.sprite.Sprite):
 
         self.y -= self.speed_y * scale * dt
         self.x += self.speed_x * scale * dt
+        self.collision()
 
         if self.speed_x > 0:
             if self.speed_x < self.drag * dt or not self.is_falling:
@@ -93,26 +111,58 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.speed_x += (self.drag * dt * math.fabs(math.cos(math.radians(self.angle))) ** 1.5)
 
-    def rotate_arrow(self, pivot):
-        # rotate the arrow image around the pivot
+    def rotate_arrow(self, pivot: tuple[int,int]) -> tuple[pygame.Surface, pygame.Rect]:
+        """
+        Rotates the arrow to the direction of jumping.
+        :param pivot: the point around which the arrow is rotated
+        :return: image and its position
+        """
         image = pygame.Surface((self.arrow.get_width(), self.arrow.get_height() * 2), pygame.SRCALPHA)
         image.blit(self.arrow, (0, 0))
         image = pygame.transform.rotozoom(image, self.angle - 90, 1)
         rect = image.get_rect()
         if self.angle > 90:
-            self.arrow = pygame.image.load("game/assets/arrow-left.png")
+            self.arrow = pygame.image.load(arrow_left)
             self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
         else:
-            self.arrow = pygame.image.load(arrow_img)
+            self.arrow = pygame.image.load(arrow_right)
             self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
         rect.center = pivot
         return image, rect
 
+    def collision(self):
+        """
+        Checks player collision with other blocks.
+        Sets player 'is_falling' if there is a block under it.
+        """
+        col_rect = pygame.Rect((self.rect.x, self.rect.y), (self.rect.width, self.rect.height + 1))
+        for block in blocks.sprites():
+            if col_rect.colliderect(block):
+                if self.pre_pos[1] + self.rect.height <= block.rect.y:
+                    self.y = block.rect.y - self.rect.height
+                    self.is_falling = False
+                    return
+                if self.pre_pos[0] + self.rect.width <= block.rect.x:
+                    self.x = block.rect.x - self.rect.width
+                    self.speed_x = 0
+                if self.pre_pos[0] >= block.rect.x + block.rect.width:
+                    self.x = block.rect.x + block.rect.width
+                    self.speed_x = 0
+                if self.pre_pos[1] >= block.rect.y + block.rect.height:
+                    self.y = block.rect.y + block.rect.height
+                    self.speed_y *= 0.2
+        if self.y == max_y - self.rect.height:
+            self.is_falling = False
+        else:
+            self.is_falling = True
+
     def update(self):
+        """
+        Call all other object functions to update its state.
+        """
         if not self.is_falling:
             self.speed_y = 0
-        if last_y == frog.y:
-            blit_arrow, arrow_rect = self.rotate_arrow([self.x + self.rect.width * 0.5, self.y - scale * 5])
+            blit_arrow, arrow_rect = self.rotate_arrow((int(self.x + self.rect.width * 0.5), self.y - scale * 5))
             screen.blit(blit_arrow, arrow_rect)
         self.charge()
         self.move()
@@ -136,7 +186,6 @@ class Player(pygame.sprite.Sprite):
 
     @x.setter
     def x(self, pos):
-        # self.rect.x = max(min(pos, 0.6 * max_x - self.rect.width), 0.4 * max_x)
         self.rect.x = max(min(pos, max_x - self.rect.width), 0)
 
     @property
@@ -146,19 +195,21 @@ class Player(pygame.sprite.Sprite):
     @y.setter
     def y(self, pos):
         self.rect.y = max(min(pos, max_y - self.rect.height), 0)
-        standing_on = pygame.sprite.spritecollide(self, blocks, False)
-        if standing_on:
-            block = standing_on[0]
-            frog.rect.bottom = block.rect.top
-            self.is_falling = False
-        elif self.y == max_y - self.rect.height:
-            self.is_falling = False
-        else:
-            self.is_falling = True
 
 
 class Block(pygame.sprite.Sprite):
+    """
+    Class for blocks making up the map.
+    """
     def __init__(self, x, y, img, breakable, moving):
+        """
+        Create new block.
+        :param x: x position on screen
+        :param y: y position on screen
+        :param img: image to be rendered
+        :param breakable: if this block can break or be broken
+        :param moving: if block can move around
+        """
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(img)
         self.image = pygame.transform.scale_by(self.image, scale)
@@ -180,9 +231,9 @@ class Ground(pygame.sprite.Sprite):
 
 
 class Map(pygame.sprite.Sprite):
-    def __init__(self, level, x, y):
+    def __init__(self, img, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(level)
+        self.image = pygame.image.load(img)
         self.image = pygame.transform.scale_by(self.image, scale)
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -190,7 +241,21 @@ class Map(pygame.sprite.Sprite):
 
 
 class UserInterface(pygame.sprite.Sprite):
-    def __init__(self, text, on_click, x, y, has_border=False, font=default_font):
+    """
+    Class used for handling GUI elements such as text and buttons.
+    """
+    def __init__(self, text: str, x: int | float, y: int | float, ui_type: str, *, has_border: bool = False, font: pygame.font.Font = default_font, on_click: Callable | None = None, segments: int = 0):
+        """
+        Create new UI element.
+        :param text: text to display
+        :param ui_type: what type of UI the Object is (text, button, slider)
+        :param x: x position on screen
+        :param y: y position on screen
+        :param has_border: whether to render a border
+        :param font: which font to use for text
+        :param on_click: function to execute when clicked
+        :param segments: number of slider values (set 0 for infinite)
+        """
         pygame.sprite.Sprite.__init__(self)
 
         self.mouse_hover = None
@@ -200,10 +265,24 @@ class UserInterface(pygame.sprite.Sprite):
         self.bg = "#242424"
         self.has_border = has_border
         self.x, self.y = x, y
-        self.__update_text()
+        self.image = self.font.render(self.text, True, self.color, self.bg)
+        self.rect = self.image.get_rect()
+        self.rect.center = (self.x, self.y)
         self.on_click = on_click
+        self.element = ui_type
+        self.segments = segments
+        self.value = 0
+        self.bar = None
 
-    def __update_text(self):
+    def update_button(self):
+        """
+        Update the button element based on current parameters.
+        Can change color, size and text.
+        """
+        if self.mouse_hover:
+            self.color = "#60735d"
+        else:
+            self.color = "#92ad8d"
         self.image = self.font.render(self.text, True, self.color, self.bg)
         if self.has_border:
             pygame.draw.rect(self.image, self.color, self.image.get_rect(), 4)
@@ -213,17 +292,29 @@ class UserInterface(pygame.sprite.Sprite):
         self.rect.center = (self.x, self.y)
 
     def update(self, mouse_pos, mouse_click):
-        if self.rect.collidepoint(mouse_pos) and self.on_click is not None:
+        """
+        Change UI parameters if hovered or clicked.
+        Call onclick function if clicked.
+        :param mouse_pos: current mouse position
+        :param mouse_click: state of mouse button 0 (left click)
+        """
+        if self.rect.collidepoint(mouse_pos):
             self.mouse_hover = True
-            # self.font.set_underline(True)
-            self.color = "#60735d"
-            if mouse_click:
+            if mouse_click and self.on_click is not None:
                 self.on_click()
         else:
-            # self.font.set_underline(False)
-            self.color = "#92ad8d"
             self.mouse_hover = False
-        self.__update_text()
+        if self.has_border:
+            pygame.draw.rect(self.image, self.color, self.image.get_rect(), 4)
+        if self.element == "slider":
+            self.update_slider(mouse_click, mouse_pos)
+        elif self.element == "button":
+            self.update_button()
+
+    def update_slider(self, mouse_click, mouse_pos):
+        if self.mouse_hover and mouse_click:
+            self.value = (mouse_pos[0] - self.x) / self.rect.width
+        pygame.draw.rect(self.image, self.color, (self.x + self.rect.width * self.value, self.y, self.x + self.rect.width * self.value + 20 * scale, self.y + self.rect.height))
 
 
 lines = 0
@@ -335,7 +426,11 @@ def cords():
     camera_move(general_x, general_y)
 
 
-def render_menu():
+def render_menu() -> bool:
+    """
+    Draw UI items to screen if game is paused.
+    :return: True if menu has been rendered, False if not
+    """
     if show_menu:
         ui.draw(screen)
         for item in ui:
@@ -345,6 +440,9 @@ def render_menu():
 
 
 def quit_game():
+    """
+    Sets running to False, ending the game.
+    """
     global running
     running = False
 
@@ -352,10 +450,11 @@ def quit_game():
 ground = Ground(0, max_y)
 frog = Player(0, max_y - 60, 8)
 main_group = pygame.sprite.Group(frog)
-main_text = UserInterface(" RIB.IT ", None, max_x / 2, max_y * 0.4)
-quit_button = UserInterface(" QUIT ", quit_game, max_x / 2, max_y * 0.7, True)
-ui = pygame.sprite.Group(quit_button, main_text)
-level_1 = Map("game/assets/map-placeholder.png", 0, -2000 - max_y)
+main_text = UserInterface(" RIB.IT ", max_x / 2, max_y * 0.4, "text")
+quit_button = UserInterface(" QUIT ", max_x / 2, max_y * 0.7, "button", has_border=True, on_click=quit_game)
+volume_slider = UserInterface("Volume", max_x / 2, max_y * 0.2, "slider", has_border=True)
+ui = pygame.sprite.Group(quit_button, main_text, volume_slider)
+level_1 = Map(level, 0, -2000 - max_y)
 levels = pygame.sprite.Group(level_1)
 
 generate_level()
