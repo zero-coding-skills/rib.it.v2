@@ -1,13 +1,13 @@
 import math
-import random
-import pygame
-from collections.abc import Callable
 import os
+import random
+from collections.abc import Callable
 
+import pygame
 
 pygame.init()
 
-scale = 2  # scales the size of everything
+scale = 1  # scales the size of everything
 fullscreen = False
 file_location = "game/"
 
@@ -20,18 +20,21 @@ else:
 
 clock = pygame.time.Clock()
 dt = 0
-default_font = pygame.font.Font(f'{file_location}assets/jersey10.ttf', 100 * scale)
-os.remove("game/assets/level.txt")
+default_font = pygame.font.Font(f"{file_location}assets/jersey10.ttf", 100 * scale)
+if os.path.exists(f"{file_location}assets/level.txt"):
+    os.remove(f"{file_location}assets/level.txt")
 
 running = True
 show_menu = False
 frame_rate = 60
 
-arrow_right = f'{file_location}assets/arrow-right.png'
-arrow_left = f'{file_location}assets/arrow-left.png'
-player_img = f'{file_location}assets/frogo.png'
-level = f'{file_location}assets/map-placeholder.png'
+arrow_right = f"{file_location}assets/arrow-right.png"
+arrow_left = f"{file_location}assets/arrow-left.png"
+player_img = f"{file_location}assets/frogo.png"
+level = f"{file_location}assets/map-placeholder.png"
+block_img = f"{file_location}assets/block.png"
 print(max_x, max_y)
+block_gap = 64
 general_x = 0
 general_y = 0
 on_ground = True
@@ -41,6 +44,7 @@ class Player(pygame.sprite.Sprite):
     """
     Player object used for creating the player, managing position and everything player-wise.
     """
+
     def __init__(self, x: int | float, y: int | float, charge_speed: int | float):
         """
         Create new player object.
@@ -104,20 +108,32 @@ class Player(pygame.sprite.Sprite):
             if self.speed_x < self.drag * dt or not self.is_falling:
                 self.speed_x = 0
             else:
-                self.speed_x -= (self.drag * dt * math.fabs(math.cos(math.radians(self.angle))) ** 1.5)
+                self.speed_x -= (
+                    self.drag
+                    * dt
+                    * math.fabs(math.cos(math.radians(self.angle))) ** 1.5
+                )
         elif self.speed_x < 0:
             if -self.speed_x < self.drag * dt or not self.is_falling:
                 self.speed_x = 0
             else:
-                self.speed_x += (self.drag * dt * math.fabs(math.cos(math.radians(self.angle))) ** 1.5)
+                self.speed_x += (
+                    self.drag
+                    * dt
+                    * math.fabs(math.cos(math.radians(self.angle))) ** 1.5
+                )
 
-    def rotate_arrow(self, pivot: tuple[int,int]) -> tuple[pygame.Surface, pygame.Rect]:
+    def rotate_arrow(
+        self, pivot: tuple[int, int]
+    ) -> tuple[pygame.Surface, pygame.Rect]:
         """
         Rotates the arrow to the direction of jumping.
         :param pivot: the point around which the arrow is rotated
         :return: image and its position
         """
-        image = pygame.Surface((self.arrow.get_width(), self.arrow.get_height() * 2), pygame.SRCALPHA)
+        image = pygame.Surface(
+            (self.arrow.get_width(), self.arrow.get_height() * 2), pygame.SRCALPHA
+        )
         image.blit(self.arrow, (0, 0))
         image = pygame.transform.rotozoom(image, self.angle - 90, 1)
         rect = image.get_rect()
@@ -135,7 +151,9 @@ class Player(pygame.sprite.Sprite):
         Checks player collision with other blocks.
         Sets player 'is_falling' if there is a block under it.
         """
-        col_rect = pygame.Rect((self.rect.x, self.rect.y), (self.rect.width, self.rect.height + 1))
+        col_rect = pygame.Rect(
+            (self.rect.x, self.rect.y), (self.rect.width, self.rect.height + 1)
+        )
         for block in blocks.sprites():
             if col_rect.colliderect(block):
                 if self.pre_pos[1] + self.rect.height <= block.rect.y:
@@ -162,7 +180,9 @@ class Player(pygame.sprite.Sprite):
         """
         if not self.is_falling:
             self.speed_y = 0
-            blit_arrow, arrow_rect = self.rotate_arrow((int(self.x + self.rect.width * 0.5), self.y - scale * 5))
+            blit_arrow, arrow_rect = self.rotate_arrow(
+                (int(self.x + self.rect.width * 0.5), self.y - scale * 5)
+            )
             screen.blit(blit_arrow, arrow_rect)
         self.charge()
         self.move()
@@ -201,6 +221,7 @@ class Block(pygame.sprite.Sprite):
     """
     Class for blocks making up the map.
     """
+
     def __init__(self, x, y, img, breakable, moving):
         """
         Create new block.
@@ -244,7 +265,19 @@ class UserInterface(pygame.sprite.Sprite):
     """
     Class used for handling GUI elements such as text and buttons.
     """
-    def __init__(self, text: str, x: int | float, y: int | float, ui_type: str, *, has_border: bool = False, font: pygame.font.Font = default_font, on_click: Callable | None = None, segments: int = 0):
+
+    def __init__(
+        self,
+        text: str,
+        x: int | float,
+        y: int | float,
+        ui_type: str,
+        *,
+        has_border: bool = False,
+        font: pygame.font.Font = default_font,
+        on_click: Callable | None = None,
+        segments: int = 0,
+    ):
         """
         Create new UI element.
         :param text: text to display
@@ -314,7 +347,16 @@ class UserInterface(pygame.sprite.Sprite):
     def update_slider(self, mouse_click, mouse_pos):
         if self.mouse_hover and mouse_click:
             self.value = (mouse_pos[0] - self.x) / self.rect.width
-        pygame.draw.rect(self.image, self.color, (self.x + self.rect.width * self.value, self.y, self.x + self.rect.width * self.value + 20 * scale, self.y + self.rect.height))
+        pygame.draw.rect(
+            self.image,
+            self.color,
+            (
+                self.x + self.rect.width * self.value,
+                self.y,
+                self.x + self.rect.width * self.value + 20 * scale,
+                self.y + self.rect.height,
+            ),
+        )
 
 
 lines = 0
@@ -323,17 +365,18 @@ line = 0
 char_count = 0
 blocks = pygame.sprite.Group()
 
+
 def generate_level():
     global lines
     global last_position
     global line
     global char_count
 
-    block_image = pygame.image.load(player_img).get_rect()
+    block_image = pygame.image.load(block_img).get_rect()
     line = []
     block_count = 0
-    char_count = max_x // block_image.width // scale #level_1.rect.width // block_image.width // scale
-    line_count = max_y // block_image.height // scale #level_1.rect.height // block_image.height // scale
+    char_count = max_x // block_image.width * scale  # level_1.rect.width // block_image.width // scale
+    line_count = max_y // block_image.height * scale  # level_1.rect.height // block_image.height // scale
     position = random.randint(0, 2)
 
     if position == 1:
@@ -356,9 +399,8 @@ def generate_level():
     else:
         if last_position != position:
             with open("game/assets/level.txt", "a") as file:
-                file.write(''.join(line) + "\n")
+                file.write("".join(line) + "\n")
             lines += 1
-
 
     last_position = position
 
@@ -369,8 +411,19 @@ def generate_level():
         lines = 0
         read_n_render()
 
-        print("char count: " + str(char_count), "level width: " + str(level_1.rect.width), "block width: " + str(block_image.width), "block width scaled: " + str(block_image.width * scale))
-        print("line count: " + str(line_count), "level height: " + str(level_1.rect.height), "block height: " + str(block_image.height), "block height scaled: " + str(block_image.height * scale))
+        print(
+            "char count: " + str(char_count),
+            "level width: " + str(level_1.rect.width),
+            "block width: " + str(block_image.width),
+            "block width scaled: " + str(block_image.width * scale),
+        )
+        print(
+            "line count: " + str(line_count),
+            "level height: " + str(level_1.rect.height),
+            "block height: " + str(block_image.height),
+            "block height scaled: " + str(block_image.height * scale),
+        )
+
 
 def read_n_render():
     global line
@@ -387,14 +440,13 @@ def read_n_render():
                 current_char = 1
                 line += 1
 
-
             if char == "x":
                 sprite = pygame.sprite.Sprite()
-                sprite.image = pygame.image.load(player_img)
+                sprite.image = pygame.image.load(block_img)
                 sprite.image = pygame.transform.scale_by(sprite.image, scale)
                 sprite.rect = sprite.image.get_rect()
                 sprite.rect.x = current_char * sprite.rect.width
-                sprite.rect.y = line * sprite.rect.height
+                sprite.rect.y = line * sprite.rect.height + block_gap * scale
                 block = sprite
                 blocks.add(block)
 
@@ -403,17 +455,18 @@ def read_n_render():
 
 def camera_move(x, y):
     if y > 0.6 * max_y:
-        pass # change the map and the block position by the difference in general_y - 0.6 * max_y (i think... i just want to commit)
-    if y < 0.3 * max_y: #and if the map position is higher than -2000 - max_y
+        pass  # change the map and the block position by the difference in general_y - 0.6 * max_y (i think... i just want to commit)
+    if y < 0.3 * max_y:  # and if the map position is higher than -2000 - max_y
         pass
 
+
 last_y = 0
+
 
 def cords():
     global last_y
     global general_x
     global general_y
-
 
     add_y = last_y - frog.y
 
@@ -451,8 +504,12 @@ ground = Ground(0, max_y)
 frog = Player(0, max_y - 60, 8)
 main_group = pygame.sprite.Group(frog)
 main_text = UserInterface(" RIB.IT ", max_x / 2, max_y * 0.4, "text")
-quit_button = UserInterface(" QUIT ", max_x / 2, max_y * 0.7, "button", has_border=True, on_click=quit_game)
-volume_slider = UserInterface("Volume", max_x / 2, max_y * 0.2, "slider", has_border=True)
+quit_button = UserInterface(
+    " QUIT ", max_x / 2, max_y * 0.7, "button", has_border=True, on_click=quit_game
+)
+volume_slider = UserInterface(
+    "Volume", max_x / 2, max_y * 0.2, "slider", has_border=True
+)
 ui = pygame.sprite.Group(quit_button, main_text, volume_slider)
 level_1 = Map(level, 0, -2000 - max_y)
 levels = pygame.sprite.Group(level_1)
