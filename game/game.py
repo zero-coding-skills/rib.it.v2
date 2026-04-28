@@ -9,20 +9,24 @@ pygame.init()
 
 scale = 1  # scales the size of everything
 fullscreen = False
-file_location = "game/"
+max_x, max_y = 500, 800
+
 
 if fullscreen:
     max_x, max_y = pygame.display.get_desktop_sizes()[0]
     screen = pygame.display.set_mode((max_x, max_y), pygame.FULLSCREEN)
 else:
-    max_x, max_y = 500, 800
+    x, y = max_x // 32, max_y // 32
+    max_x, max_y = x * 32, y * 32
     screen = pygame.display.set_mode((max_x, max_y))
 
+
+file_location = "game/"
 clock = pygame.time.Clock()
 dt = 0
 default_font = pygame.font.Font(f"{file_location}assets/jersey10.ttf", 100 * scale)
-if os.path.exists(f"{file_location}assets/level.txt"):
-    os.remove(f"{file_location}assets/level.txt")
+if os.path.exists(f"{file_location}assets/level.demo"):
+    os.remove(f"{file_location}assets/level.demo")
 
 running = True
 show_menu = False
@@ -32,7 +36,9 @@ arrow_right = f"{file_location}assets/arrow-right.png"
 arrow_left = f"{file_location}assets/arrow-left.png"
 player_img = f"{file_location}assets/frogo.png"
 level = f"{file_location}assets/map-placeholder.png"
-block_img = f"{file_location}assets/block.png"
+block_img0 = f"{file_location}assets/block0.png"
+block_img1 = f"{file_location}assets/block1.png"
+block_img2 = f"{file_location}assets/block2.png"
 print(max_x, max_y)
 block_gap = 64
 general_x = 0
@@ -359,98 +365,71 @@ class UserInterface(pygame.sprite.Sprite):
         )
 
 
-lines = 0
-last_position = 3
-line = 0
-char_count = 0
+c_line = 0
+last_pos = None
+chars = max_x // (32 * scale)
+lines = max_y // ((32 + block_gap) * scale)
 blocks = pygame.sprite.Group()
 
 
-def generate_level():
-    global lines
-    global last_position
-    global line
-    global char_count
+def generate():
+    global c_line
+    global last_pos
 
-    block_image = pygame.image.load(block_img).get_rect()
     line = []
-    block_count = 0
-    char_count = max_x // block_image.width * scale  # level_1.rect.width // block_image.width // scale
-    line_count = max_y // block_image.height * scale  # level_1.rect.height // block_image.height // scale
-    position = random.randint(0, 2)
+    pos = random.randint(0, 3)
 
-    if position == 1:
-        line.append("-----")
-    elif position == 2:
-        line.append("----------")
+    if pos != 0:
+        line.append(pos * (chars // 4) * "-")
 
-    for char in range(char_count - (position * 5)):
-        random_char = random.randint(0, 3)
-        if random_char == 1 and block_count < 2:
-            line.append("x")
-            block_count += 1
+    for char in range(chars - pos * (chars // 4)):
+        chosen = random.randint(0, 4)
+        if chosen == 1:
+            line.append("x" + ((chars - pos * (chars // 4) - 1) - char) * "-")
+            break
         else:
             line.append("-")
 
-    if lines == 0:
-        with open("game/assets/level.txt", "a") as file:
-            file.write("------xxx------\n")
-        lines += 1
+    if last_pos != pos:
+        with open("game/assets/level.demo", "a") as f:
+            f.write("".join(line) + "\n")
+        c_line += 1
+
+    last_pos = last_pos
+
+    if c_line < lines:
+        generate()
     else:
-        if last_position != position:
-            with open("game/assets/level.txt", "a") as file:
-                file.write("".join(line) + "\n")
-            lines += 1
+        c_line = 0
+        render()
 
-    last_position = position
+def render():
 
-    if lines < line_count:
-        generate_level()
-    else:
-        line = lines
-        lines = 0
-        read_n_render()
+    char = 0
+    def_block_height = 32
+    line = 0
 
-        print(
-            "char count: " + str(char_count),
-            "level width: " + str(level_1.rect.width),
-            "block width: " + str(block_image.width),
-            "block width scaled: " + str(block_image.width * scale),
-        )
-        print(
-            "line count: " + str(line_count),
-            "level height: " + str(level_1.rect.height),
-            "block height: " + str(block_image.height),
-            "block height scaled: " + str(block_image.height * scale),
-        )
-
-
-def read_n_render():
-    global line
-    current_char = 1
-
-    with open("game/assets/level.txt", "r") as file:
-        line = 1
-
+    with open("game/assets/level.demo", "r") as f:
         while True:
-            char = file.read(1)
-            if not char:
+            read_char = f.read(1)
+            if not read_char:
                 break
-            if current_char >= char_count:
-                current_char = 1
+            if char + 1 > chars:
+                char = 0
                 line += 1
-
-            if char == "x":
-                sprite = pygame.sprite.Sprite()
-                sprite.image = pygame.image.load(block_img)
-                sprite.image = pygame.transform.scale_by(sprite.image, scale)
-                sprite.rect = sprite.image.get_rect()
-                sprite.rect.x = current_char * sprite.rect.width
-                sprite.rect.y = line * sprite.rect.height + block_gap * scale
-                block = sprite
-                blocks.add(block)
-
-            current_char += 1
+            if read_char != "\n":
+                if read_char == "x":
+                    obj = pygame.sprite.Sprite()
+                    bimg = random.randint(0, 2)
+                    obj.image = pygame.image.load(f'{file_location}assets/block{bimg}.png')
+                    obj.image = pygame.transform.scale_by(obj.image, scale)
+                    obj.rect = obj.image.get_rect()
+                    height_diff = def_block_height - obj.rect.height
+                    obj.rect.x = char * obj.rect.width
+                    obj.rect.y = line * (obj.rect.height + height_diff + block_gap) * scale
+                    block = obj
+                    blocks.add(block)
+                char += 1
 
 
 def camera_move(x, y):
@@ -501,7 +480,7 @@ def quit_game():
 
 
 ground = Ground(0, max_y)
-frog = Player(0, max_y - 60, 8)
+frog = Player(max_x // 2, max_y - 60, 8)
 main_group = pygame.sprite.Group(frog)
 main_text = UserInterface(" RIB.IT ", max_x / 2, max_y * 0.4, "text")
 quit_button = UserInterface(
@@ -514,7 +493,7 @@ ui = pygame.sprite.Group(quit_button, main_text, volume_slider)
 level_1 = Map(level, 0, -2000 - max_y)
 levels = pygame.sprite.Group(level_1)
 
-generate_level()
+generate()
 
 while running:
     for event in pygame.event.get():

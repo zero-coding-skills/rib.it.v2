@@ -34,32 +34,29 @@ def generate_level():
     block_image = pygame.image.load(block_img).get_rect()
     line = []
     block_count = 0
-    char_count = level_width // block_image.width * scale  # level_1.rect.width // block_image.width // scale
-    line_count = level_height // block_image.height * scale  # level_1.rect.height // block_image.height // scale
-    position = random.randint(0, 2)
+    char_count = level_width // (block_image.width * scale)  # level_1.rect.width // block_image.width // scale
+    line_count = level_height // (block_image.height * scale)  # level_1.rect.height // block_image.height // scale
+    position = random.randint(0, 3)
 
     if position == 1:
-        line.append("-----")
+        line.append((char_count // 4) * "-")
     elif position == 2:
-        line.append("----------")
+        line.append(2 * (char_count // 4) * "-")
+    elif position == 3:
+        line.append(3 * (char_count // 4) * "-")
 
     for char in range(char_count - (position * 5)):
         random_char = random.randint(0, 3)
-        if random_char == 1 and block_count < 2:
+        if random_char == 1 and block_count < 1:
             line.append("x")
             block_count += 1
         else:
             line.append("-")
 
-    if lines == 0:
+    if last_position != position:
         with open("game/assets/level.txt", "a") as file:
-            file.write("------xxx------\n")
+            file.write("".join(line) + "\n")
         lines += 1
-    else:
-        if last_position != position:
-            with open("game/assets/level.txt", "a") as file:
-                file.write("".join(line) + "\n")
-            lines += 1
 
     last_position = position
 
@@ -87,6 +84,7 @@ def generate_level():
 def read_n_render():
     global line
     current_char = 1
+    default_block_height = 32
 
     with open("game/assets/level.txt", "r") as file:
         line = 1
@@ -105,7 +103,7 @@ def read_n_render():
                 sprite.image = pygame.transform.scale_by(sprite.image, scale)
                 sprite.rect = sprite.image.get_rect()
                 sprite.rect.x = current_char * sprite.rect.width
-                sprite.rect.y = (-2000 + max_y) + line * sprite.rect.height * scale + block_gap * scale
+                sprite.rect.y = (-2016 + max_y) + line * sprite.rect.height * scale + block_gap * scale + default_block_height - sprite.rect.height
                 block = sprite
                 blocks.add(block)
 
