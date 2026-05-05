@@ -9,7 +9,7 @@ pygame.init()
 
 scale = 1  # scales the size of everything
 fullscreen = False
-max_x, max_y = 500, 800
+max_x, max_y = 300, 800
 
 
 if fullscreen:
@@ -36,9 +36,7 @@ arrow_right = f"{file_location}assets/arrow-right.png"
 arrow_left = f"{file_location}assets/arrow-left.png"
 player_img = f"{file_location}assets/frogo.png"
 level = f"{file_location}assets/map-placeholder.png"
-block_img0 = f"{file_location}assets/block0.png"
-block_img1 = f"{file_location}assets/block1.png"
-block_img2 = f"{file_location}assets/block2.png"
+block_img_count = 3
 print(max_x, max_y)
 block_gap = 64
 general_x = 0
@@ -368,13 +366,13 @@ class UserInterface(pygame.sprite.Sprite):
 c_line = 0
 last_pos = None
 chars = max_x // (32 * scale)
-lines = max_y // ((32 + block_gap) * scale)
 blocks = pygame.sprite.Group()
 
 
 def generate():
     global c_line
     global last_pos
+    lines = level_1.rect.height // ((32 + block_gap) * scale)
 
     line = []
     pos = random.randint(0, 3)
@@ -420,23 +418,29 @@ def render():
             if read_char != "\n":
                 if read_char == "x":
                     obj = pygame.sprite.Sprite()
-                    bimg = random.randint(0, 2)
+                    bimg = random.randint(0, block_img_count - 1)
                     obj.image = pygame.image.load(f'{file_location}assets/block{bimg}.png')
                     obj.image = pygame.transform.scale_by(obj.image, scale)
                     obj.rect = obj.image.get_rect()
                     height_diff = def_block_height - obj.rect.height
                     obj.rect.x = char * obj.rect.width
-                    obj.rect.y = line * (obj.rect.height + height_diff + block_gap) * scale
+                    obj.rect.y = (-2000 + max_y) + line * (obj.rect.height + height_diff + block_gap) * scale
                     block = obj
                     blocks.add(block)
                 char += 1
 
 
 def camera_move(x, y):
-    if y > 0.6 * max_y:
-        pass  # change the map and the block position by the difference in general_y - 0.6 * max_y (i think... i just want to commit)
-    if y < 0.3 * max_y:  # and if the map position is higher than -2000 - max_y
-        pass
+    if frog.y < 0.4 * max_y:
+        add_y = 0.4 * max_y - frog.y
+        for sprite in blocks:
+            sprite.rect.y += add_y
+        frog.y = 0.4 * max_y
+    elif frog.y > 0.7 * max_y and y > 0.4 * max_y:
+        add_y = 0.7 * max_y - frog.y
+        for sprite in blocks:
+            sprite.rect.y += add_y
+        frog.y = 0.7 * max_y
 
 
 last_y = 0
