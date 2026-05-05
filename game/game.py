@@ -9,7 +9,7 @@ pygame.init()
 
 scale = 1  # scales the size of everything
 fullscreen = False
-max_x, max_y = 300, 800
+max_x, max_y = 500, 800
 
 
 if fullscreen:
@@ -376,15 +376,19 @@ def generate():
 
     line = []
     pos = random.randint(0, 3)
+    xcount = 0
 
     if pos != 0:
         line.append(pos * (chars // 4) * "-")
 
     for char in range(chars - pos * (chars // 4)):
         chosen = random.randint(0, 4)
-        if chosen == 1:
+        if chosen == 1 and xcount >= 2:
             line.append("x" + ((chars - pos * (chars // 4) - 1) - char) * "-")
             break
+        elif chosen == 1:
+            line.append("x")
+            xcount += 1
         else:
             line.append("-")
 
@@ -430,13 +434,15 @@ def render():
                 char += 1
 
 
-def camera_move(x, y):
+def camera_move():
+    global general_y
+    print(general_y)
     if frog.y < 0.4 * max_y:
         add_y = 0.4 * max_y - frog.y
         for sprite in blocks:
             sprite.rect.y += add_y
         frog.y = 0.4 * max_y
-    elif frog.y > 0.7 * max_y and y > 0.4 * max_y:
+    elif frog.y > 0.7 * max_y and general_y > 0.4 * max_y: #not working :(
         add_y = 0.7 * max_y - frog.y
         for sprite in blocks:
             sprite.rect.y += add_y
@@ -451,15 +457,15 @@ def cords():
     global general_x
     global general_y
 
-    add_y = last_y - frog.y
-
-    general_y = general_y + add_y
+    if frog.y > 0.4 * max_y:
+        add_y = last_y - frog.y
+        general_y = general_y + add_y
 
     last_y = frog.y
     if general_y < 0:
         general_y = 0
 
-    camera_move(general_x, general_y)
+    camera_move()
 
 
 def render_menu() -> bool:
