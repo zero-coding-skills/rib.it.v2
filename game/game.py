@@ -37,7 +37,7 @@ arrow_left = f"{file_location}assets/arrow-left.png"
 player_img = f"{file_location}assets/frogo.png"
 level = f"{file_location}assets/map-placeholder.png"
 block_img_count = 3
-print(max_x, max_y)
+print("The game's resolution is: " + str(max_x) + "x" + str(max_y))
 block_gap = 64
 general_x = 0
 general_y = 0
@@ -462,12 +462,13 @@ def camera_move():
     general_y += add_y
 
 last_y = 0
-
+high_score = 0
 
 def cords():
     global last_y
     global general_x
     global general_y
+    global high_score
 
     if frog.y > 0.4 * max_y:
         add_y = last_y - frog.y
@@ -476,6 +477,8 @@ def cords():
     last_y = frog.y
     if general_y < 0:
         general_y = 0
+    if general_y > high_score:
+        high_score = general_y
 
     camera_move()
 
@@ -551,4 +554,5 @@ while running:
     pygame.display.flip()
     dt = clock.tick(frame_rate) / 1000
 
+print("Your highest score this game was: " + str(int(high_score)))
 pygame.quit()
