@@ -437,17 +437,18 @@ def render():
 def camera_move():
     global general_y
     print(general_y)
+    add_y = 0
     if frog.y < 0.4 * max_y:
         add_y = 0.4 * max_y - frog.y
         for sprite in blocks:
             sprite.rect.y += add_y
         frog.y = 0.4 * max_y
-    elif frog.y > 0.7 * max_y and general_y > 0.4 * max_y: #not working :(
+    if frog.y > 0.7 * max_y and general_y > 0 and last_y < frog.y:
         add_y = 0.7 * max_y - frog.y
         for sprite in blocks:
             sprite.rect.y += add_y
         frog.y = 0.7 * max_y
-
+    general_y += add_y
 
 last_y = 0
 
