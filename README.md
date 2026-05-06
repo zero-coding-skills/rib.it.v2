@@ -8,7 +8,7 @@ It is inspired by the game 'Jump King'.
 
 You ascend the obstacles by jumping from one to the next.
 
-To jump, hold `Space` to charge jump intensity and aim using `A` ,`D`.
+To jump, hold <kbd>SPACE</kbd> to charge jump intensity and aim using <kbd>A</kbd> ,<kbd>D</kbd>.
 
 Let go of space to jump.
 
