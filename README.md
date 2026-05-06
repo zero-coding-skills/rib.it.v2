@@ -2,7 +2,7 @@
 
 This is a complete remake of our original project <a href="https://github.com/FefanAM/Rib.it">located here.</a>
 
-It is inspired by the game 'Jump King'.
+It is inspired by the game <a href="https://store.steampowered.com/app/1061090/Jump_King/">`Jump King`</a>.
 
 ### Control
 
