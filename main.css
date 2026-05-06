@@ -16,9 +16,23 @@ body {
     background-image: url("content/wallp.png");
     background-size: cover;
     background-repeat: no-repeat;
-    height: 100vh;
     color: rgb(255, 255, 255);
     font-family: Pixels;
+    overflow: hidden;
+}
+
+#img {
+    background-image: url("content/wallp.png");
+    background-size: cover;
+    background-repeat: no-repeat;
+    height: 100vh;
+}
+
+a {
+    color: rgb(255, 255, 255);
+    font-family: Pixels;
+    text-decoration: none;
+    pointer-events: all;
 }
 
 button {

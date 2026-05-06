@@ -2,7 +2,6 @@ import math
 import os
 import random
 from collections.abc import Callable
-
 import pygame
 
 pygame.init()
