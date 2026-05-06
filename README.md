@@ -4,13 +4,13 @@ This is a complete remake of our original project <a href="https://github.com/Fe
 
 It is inspired by the game 'Jump King'.
 
->### Control
->
->You ascend the obstacles by jumping from one to the next.
->
->To jump, hold <kbd>SPACE</kbd> to charge jump intensity and aim using <kbd>A</kbd> ,<kbd>D</kbd>.
->
->Let go of space to jump.
+### Control
+
+- You ascend the obstacles by jumping from one to the next.
+
+- To jump, hold <kbd>SPACE</kbd> to charge jump intensity and aim using <kbd>A</kbd> ,<kbd>D</kbd>.
+
+- Let go of space to jump.
 
 # Download
 
