@@ -21,7 +21,7 @@ else:
     screen = pygame.display.set_mode((max_x, max_y))
 
 
-file_location = "game/"
+file_location = ""
 clock = pygame.time.Clock()
 dt = 0
 default_font = pygame.font.Font(f"{file_location}assets/jersey10.ttf", 100 * scale)
@@ -42,6 +42,7 @@ block_gap = 64
 general_x = 0
 general_y = 0
 on_ground = True
+map_height = 0
 
 
 class Player(pygame.sprite.Sprite):
@@ -188,8 +189,16 @@ class Player(pygame.sprite.Sprite):
                 (int(self.x + self.rect.width * 0.5), self.y - scale * 5)
             )
             screen.blit(blit_arrow, arrow_rect)
-        self.charge()
-        self.move()
+        if not self.drag_frog():
+            self.charge()
+            self.move()
+
+    def drag_frog(self):
+        if self.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+            self.x = pygame.mouse.get_pos()[0] - self.rect.width / 2
+            self.y = pygame.mouse.get_pos()[1] - self.rect.height / 2
+            return True
+        return False
 
     @property
     def position(self):
@@ -393,7 +402,7 @@ def generate():
             line.append("-")
 
     if last_pos != pos:
-        with open("game/assets/level.demo", "a") as f:
+        with open(f'{file_location}assets/level.demo', "a") as f:
             f.write("".join(line) + "\n")
         c_line += 1
 
@@ -411,7 +420,7 @@ def render():
     def_block_height = 32
     line = 0
 
-    with open("game/assets/level.demo", "r") as f:
+    with open(f'{file_location}assets/level.demo', "r") as f:
         while True:
             read_char = f.read(1)
             if not read_char:
@@ -436,17 +445,20 @@ def render():
 
 def camera_move():
     global general_y
+    global map_height
     print(general_y)
     add_y = 0
     if frog.y < 0.4 * max_y:
         add_y = 0.4 * max_y - frog.y
         for sprite in blocks:
             sprite.rect.y += add_y
+        map_height += add_y
         frog.y = 0.4 * max_y
-    if frog.y > 0.7 * max_y and general_y > 0 and last_y < frog.y:
+    if frog.y > 0.7 * max_y and map_height > 0:
         add_y = 0.7 * max_y - frog.y
         for sprite in blocks:
             sprite.rect.y += add_y
+        map_height += add_y
         frog.y = 0.7 * max_y
     general_y += add_y
 
