@@ -4,13 +4,13 @@ This is a complete remake of our original project <a href="https://github.com/Fe
 
 It is inspired by the game <a href="https://store.steampowered.com/app/1061090/Jump_King/">Jump King</a>.
 
-### Control
+### Controls
 
 - You ascend the obstacles by jumping from one to the next.
 
 - To jump, hold <kbd>SPACE</kbd> to charge jump intensity and aim using <kbd>A</kbd> ,<kbd>D</kbd>.
 
-- Let go of space to jump.
+- Let go of <kbd>SPACE</kbd> to jump.
 
 # Download
 
@@ -32,6 +32,9 @@ To install pygame, open command prompt and type or copy:
 
     py -m pip install pygame
 
+You can also use pygame community edition:
+
+	py -m pip install pygame-ce
 
 > [!WARNING]
 > If your computer runs Windows on aarch64 (arm64) architecture,
