@@ -21,7 +21,7 @@ else:
     screen = pygame.display.set_mode((max_x, max_y))
 
 
-file_location = ""
+file_location = "game/"
 clock = pygame.time.Clock()
 dt = 0
 default_font = pygame.font.Font(f"{file_location}assets/jersey10.ttf", 100 * scale)
@@ -446,7 +446,6 @@ def render():
 def camera_move():
     global general_y
     global map_height
-    print(general_y)
     add_y = 0
     if frog.y < 0.4 * max_y:
         add_y = 0.4 * max_y - frog.y
