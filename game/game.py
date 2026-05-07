@@ -16,6 +16,8 @@ if fullscreen:
     screen = pygame.display.set_mode((max_x, max_y), pygame.FULLSCREEN)
 else:
     x, y = max_x // 32, max_y // 32
+    if x // 2 < x / 2:
+        x -= 1
     max_x, max_y = x * 32, y * 32
     screen = pygame.display.set_mode((max_x, max_y))
 
@@ -372,6 +374,7 @@ c_line = 0
 last_pos = None
 chars = max_x // (32 * scale)
 blocks = pygame.sprite.Group()
+f = False
 
 def drag_frog():
     if dragging:
@@ -382,32 +385,44 @@ def drag_frog():
 def generate():
     global c_line
     global last_pos
+    global f
+
     lines = level_1.rect.height // ((32 + block_gap) * scale)
-
+    fb = 0
     line = []
-    pos = random.randint(0, 3)
-    xcount = 0
+    pos = random.randint(1, (chars // 2))
 
-    if pos != 0:
-        line.append(pos * (chars // 4) * "-")
+    line.append("--" * (pos - 1))
+    chosen = random.randint(1, 3)
+    if chosen == 1:
+        line.append("nn")
+    elif chosen == 2:
+        line.append("bb")
+    elif chosen == 3:
+        num = 1
+        line = []
+        if chars / 2 > chars // 2:
+            num = 0
+        line.append("-" * (chars // 2 - num) + "f" + "-" *(chars // 2))
+        fb = 1
+    else:
+        line.append("--")
 
-    for char in range(chars - pos * (chars // 4)):
-        chosen = random.randint(0, 4)
-        if chosen == 1 and xcount >= 2:
-            line.append("x" + ((chars - pos * (chars // 4) - 1) - char) * "-")
-            break
-        elif chosen == 1:
-            line.append("x")
-            xcount += 1
+    if fb != 1:
+        line.append((chars // 2 - pos) * "--")
+
+    if pos != last_pos:
+        if f and chosen == 3:
+            pass
         else:
-            line.append("-")
-
-    if last_pos != pos:
-        with open(f'{file_location}assets/level.demo', "a") as f:
-            f.write("".join(line) + "\n")
-        c_line += 1
-
-    last_pos = last_pos
+            with open(f'{file_location}assets/level.demo', "a") as f:
+                f.write("".join(line) + "\n")
+            c_line += 1
+            last_pos = pos
+        if chosen == 3:
+            f = True
+        else:
+            f = False
 
     if c_line < lines:
         generate()
@@ -416,10 +431,11 @@ def generate():
         render()
 
 def render():
-
     char = 0
     def_block_height = 32
     line = 0
+    b = 0
+    bimg = 0
 
     with open(f'{file_location}assets/level.demo', "r") as f:
         while True:
@@ -427,20 +443,32 @@ def render():
             if not read_char:
                 break
             if char + 1 > chars:
+                b = 0
                 char = 0
                 line += 1
             if read_char != "\n":
-                if read_char == "x":
+                if read_char != "-":
                     obj = pygame.sprite.Sprite()
-                    bimg = random.randint(0, block_img_count - 1)
+                    if b < 1:
+                        bimg = random.randint(0, block_img_count - 1)
                     obj.image = pygame.image.load(f'{file_location}assets/block{bimg}.png')
                     obj.image = pygame.transform.scale_by(obj.image, scale)
                     obj.rect = obj.image.get_rect()
                     height_diff = def_block_height - obj.rect.height
                     obj.rect.x = char * obj.rect.width
                     obj.rect.y = (-2000 + max_y) + line * (obj.rect.height + height_diff + block_gap) * scale
+                    if read_char == "n":
+                        obj.breakable = False
+                        obj.moving = False
+                    elif read_char == "f":
+                        obj.breakable = False
+                        obj.moving = True
+                    elif read_char == "b":
+                        obj.breakable = True
+                        obj.moving = False
                     block = obj
                     blocks.add(block)
+                    b += 1
                 char += 1
 
 
