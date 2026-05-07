@@ -34,14 +34,14 @@ frame_rate = 60
 arrow_right = f"{file_location}assets/arrow-right.png"
 arrow_left = f"{file_location}assets/arrow-left.png"
 player_img = f"{file_location}assets/frogo.png"
-level = f"{file_location}assets/map-placeholder.png"
+level = f"{file_location}assets/background-500x2000.png"
 block_img_count = 3
 print("The game's resolution is: " + str(max_x) + "x" + str(max_y))
 block_gap = 64
 general_x = 0
 general_y = 0
-on_ground = True
 map_height = 0
+dragging = False
 
 
 class Player(pygame.sprite.Sprite):
@@ -188,16 +188,13 @@ class Player(pygame.sprite.Sprite):
                 (int(self.x + self.rect.width * 0.5), self.y - scale * 5)
             )
             screen.blit(blit_arrow, arrow_rect)
-        if not self.drag_frog():
+        if not dragging:
             self.charge()
             self.move()
 
-    def drag_frog(self):
-        if self.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-            self.x = pygame.mouse.get_pos()[0] - self.rect.width / 2
-            self.y = pygame.mouse.get_pos()[1] - self.rect.height / 2
-            return True
-        return False
+
+
+
 
     @property
     def position(self):
@@ -376,6 +373,11 @@ last_pos = None
 chars = max_x // (32 * scale)
 blocks = pygame.sprite.Group()
 
+def drag_frog():
+    if dragging:
+        frog.x = pygame.mouse.get_pos()[0] - frog.rect.width / 2
+        frog.y = pygame.mouse.get_pos()[1] - frog.rect.height / 2
+
 
 def generate():
     global c_line
@@ -450,11 +452,15 @@ def camera_move():
         add_y = 0.4 * max_y - frog.y
         for sprite in blocks:
             sprite.rect.y += add_y
+        for sprite in levels:
+            sprite.rect.y += add_y
         map_height += add_y
         frog.y = 0.4 * max_y
     if frog.y > 0.7 * max_y and map_height > 0:
         add_y = 0.7 * max_y - frog.y
         for sprite in blocks:
+            sprite.rect.y += add_y
+        for sprite in levels:
             sprite.rect.y += add_y
         map_height += add_y
         frog.y = 0.7 * max_y
@@ -514,7 +520,7 @@ volume_slider = UserInterface(
     "Volume", max_x / 2, max_y * 0.2, "slider", has_border=True
 )
 ui = pygame.sprite.Group(quit_button, main_text, volume_slider)
-level_1 = Map(level, 0, -2000 - max_y)
+level_1 = Map(level, 0, -2000 + max_y)
 levels = pygame.sprite.Group(level_1)
 
 generate()
@@ -540,6 +546,14 @@ while running:
         frog.angle += 100 * dt
     if keys[pygame.K_d]:
         frog.angle -= 100 * dt
+
+    if frog.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+        dragging = True
+    elif not pygame.mouse.get_pressed()[0]:
+        dragging = False
+
+    drag_frog()
+
 
     screen.fill("#242424")
 
