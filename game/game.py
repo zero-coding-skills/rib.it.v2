@@ -374,6 +374,7 @@ c_line = 0
 last_pos = None
 chars = max_x // (32 * scale)
 blocks = pygame.sprite.Group()
+flying = pygame.sprite.Group()
 f = False
 
 def drag_frog():
@@ -468,6 +469,8 @@ def render():
                         obj.moving = False
                     block = obj
                     blocks.add(block)
+                    if obj.moving:
+                        flying.add(block)
                     b += 1
                 char += 1
 
@@ -514,6 +517,29 @@ def cords():
         high_score = general_y
 
     camera_move()
+
+direction = 1
+changed = 0
+
+def move_flying():
+    global direction
+    global changed
+
+    col_rect = pygame.Rect(
+        (frog.rect.x, frog.rect.y), (frog.rect.width, frog.rect.height + 1)
+    )
+    for sprite in flying:
+        if sprite.rect.x >= max_x - 32 * scale and changed == 0 or sprite.rect.x <= 0 and changed == 1:
+            direction = -1 * direction
+            if changed == 0:
+                changed = 1
+            else:
+                changed = 0
+        if col_rect.colliderect(sprite) and not frog.is_falling:
+            frog.x += direction * 2
+        sprite.rect.x += direction * 2
+
+
 
 
 def render_menu() -> bool:
@@ -587,6 +613,7 @@ while running:
 
     if not render_menu():
         cords()
+        move_flying()
         levels.draw(screen)
         main_group.draw(screen)
         frog.update()
