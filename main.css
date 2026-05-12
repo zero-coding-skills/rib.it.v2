@@ -144,3 +144,11 @@ div p {
     bottom: 25px;
     right: 25px;
 }
+
+.about {
+    position: fixed;
+    top: 15%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 20px;
+}
