@@ -18,7 +18,7 @@ You can find the latest release <a href="https://github.com/zero-coding-skills/r
 
 # How to use
 
-To run the webpage, open `main.html` in your browser.
+To run the webpage, open `main.html` in your browser. (You need to have also the .css and .js files and the assets folder downloaded it the same folder)
 
 To run the game you will need to install python and pygame.
 
