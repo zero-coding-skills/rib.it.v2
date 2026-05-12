@@ -557,13 +557,13 @@ while running:
 
     keys = pygame.key.get_pressed()
 
-    if keys[pygame.K_SPACE]:
+    if keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_w]:
         frog.charging = True
     else:
         frog.charging = False
-    if keys[pygame.K_a]:
+    if keys[pygame.K_a] or keys[pygame.K_LEFT]:
         frog.angle += 100 * dt
-    if keys[pygame.K_d]:
+    if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
         frog.angle -= 100 * dt
 
     if frog.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
