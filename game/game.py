@@ -228,40 +228,6 @@ class Player(pygame.sprite.Sprite):
         self.rect.y = max(min(pos, max_y - self.rect.height), 0)
 
 
-class Block(pygame.sprite.Sprite):
-    """
-    Class for blocks making up the map.
-    """
-
-    def __init__(self, x, y, img, breakable, moving):
-        """
-        Create new block.
-        :param x: x position on screen
-        :param y: y position on screen
-        :param img: image to be rendered
-        :param breakable: if this block can break or be broken
-        :param moving: if block can move around
-        """
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(img)
-        self.image = pygame.transform.scale_by(self.image, scale)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-        self.breakable = breakable
-        self.moving = moving
-
-
-class Ground(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((max_x, 10))
-        self.image = pygame.transform.scale_by(self.image, scale)
-        self.rect = self.image.get_rect()
-        self.rect.x = x
-        self.rect.y = y
-
-
 class Map(pygame.sprite.Sprite):
     def __init__(self, img, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -563,7 +529,6 @@ def quit_game():
     running = False
 
 
-ground = Ground(0, max_y)
 frog = Player(max_x // 2, max_y - 60, 8)
 main_group = pygame.sprite.Group(frog)
 main_text = UserInterface(" RIB.IT ", max_x / 2, max_y * 0.4, "text")
