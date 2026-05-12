@@ -36,6 +36,8 @@ frame_rate = 60
 arrow_right = f"{file_location}assets/arrow-right.png"
 arrow_left = f"{file_location}assets/arrow-left.png"
 player_img = f"{file_location}assets/frogo.png"
+break_block_img = f'{file_location}assets/breakable1.png'
+movable_block_img = f'{file_location}assets/movable-placeholder.png'
 level = f"{file_location}assets/background-500x2000.png"
 block_img_count = 3
 print("The game's resolution is: " + str(max_x) + "x" + str(max_y))
@@ -341,6 +343,7 @@ last_pos = None
 chars = max_x // (32 * scale)
 blocks = pygame.sprite.Group()
 flying = pygame.sprite.Group()
+breakables = pygame.sprite.Group()
 f = False
 
 def drag_frog():
