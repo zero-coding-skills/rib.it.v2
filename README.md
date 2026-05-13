@@ -7,8 +7,8 @@ It is inspired by the game <a href="https://store.steampowered.com/app/1061090/J
 ### Controls
 
 - You ascend the obstacles by jumping from one to the next.
-
-- To jump, hold <kbd>SPACE</kbd> to charge jump intensity and aim using <kbd>A</kbd> ,<kbd>D</kbd>.
+- 
+- To jump, hold <kbd>SPACE</kbd>, <kbd>W</kbd> or <kbd>↑</kbd> to charge jump intensity and aim using <kbd>A</kbd> ,<kbd>D</kbd> or <kbd>←</kbd>, <kbd>→</kbd>.
 
 - Let go of <kbd>SPACE</kbd> to jump.
 
@@ -18,7 +18,7 @@ You can find the latest release <a href="https://github.com/zero-coding-skills/r
 
 # How to use
 
-To run the webpage, open `main.html` in your browser. (You need to have also the .css and .js files and the assets folder downloaded it the same folder)
+To run the webpage, download the `website.zip` folder from releases, extract it and open `main.html` in your browser.
 
 To run the game you will need to install python and pygame.
 
