@@ -43,7 +43,7 @@ movable_block_img = f'{file_location}assets/movable-placeholder.png'
 level = f"{file_location}assets/background-500x2000.png"
 block_img_count = 2
 print("The game's resolution is: " + str(max_x) + "x" + str(max_y))
-block_gap = 64
+block_gap = 48
 general_x = 0
 general_y = 0
 map_height = 0
@@ -90,7 +90,7 @@ class Player(pygame.sprite.Sprite):
         When released, set velocity of player to jump strength * force.
         """
         self.pre_pos = (self.rect.x, self.rect.y)
-        if self.charging:
+        if self.charging and not self.is_falling:
             self.force = min(10, self.force + self.charge_speed * dt)
         else:
             if self.force != 0:
@@ -198,13 +198,6 @@ class Player(pygame.sprite.Sprite):
             self.charge()
             self.move()
 
-
-
-
-
-    @property
-    def position(self):
-        return self.world_x, self.world_y
 
     @property
     def angle(self):
@@ -360,7 +353,6 @@ def generate():
     global f
 
     lines = level_1.rect.height // ((32 + block_gap) * scale)
-    fb = 0
     line = []
     pos = random.randint(1, (chars // 2))
 
@@ -491,8 +483,6 @@ def cords():
     camera_move()
 
 
-
-
 def move_flying():
     col_rect = pygame.Rect(
         (frog.rect.x, frog.rect.y), (frog.rect.width, frog.rect.height + 1)
@@ -589,8 +579,6 @@ while running:
     elif not pygame.mouse.get_pressed()[0]:
         dragging = False
 
-    drag_frog()
-
 
     screen.fill("#242424")
 
@@ -603,6 +591,7 @@ while running:
                 if not breaking:
                     start = pygame.time.get_ticks() // 1000
                 break_block(start)
+        drag_frog()
         cords()
         move_flying()
         levels.draw(screen)
