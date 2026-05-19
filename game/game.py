@@ -3,13 +3,9 @@ import os
 import random
 from collections.abc import Callable
 import pygame
+from settings import scale, fullscreen, max_x, max_y, file_location, frame_rate, block_gap, regeneration_time
 
 pygame.init()
-
-scale = 1  # scales the size of everything
-fullscreen = False
-max_x, max_y = 500, 800
-
 
 if fullscreen:
     max_x, max_y = pygame.display.get_desktop_sizes()[0]
@@ -22,7 +18,7 @@ else:
     screen = pygame.display.set_mode((max_x, max_y))
 
 
-file_location = "game/"
+
 clock = pygame.time.Clock()
 dt = 0
 default_font = pygame.font.Font(f"{file_location}assets/jersey10.ttf", 100 * scale)
@@ -31,7 +27,7 @@ if os.path.exists(f"{file_location}assets/level.demo"):
 
 running = True
 show_menu = False
-frame_rate = 60
+
 
 arrow_right = f"{file_location}assets/arrow-right.png"
 arrow_left = f"{file_location}assets/arrow-left.png"
@@ -43,7 +39,6 @@ movable_block_img = f'{file_location}assets/movable-placeholder.png'
 level = f"{file_location}assets/background-500x2000.png"
 block_img_count = 2
 print("The game's resolution is: " + str(max_x) + "x" + str(max_y))
-block_gap = 48
 general_x = 0
 general_y = 0
 map_height = 0
@@ -133,6 +128,11 @@ class Player(pygame.sprite.Sprite):
                     * math.fabs(math.cos(math.radians(self.angle))) ** 1.5
                 )
 
+    def drag_frog():
+        if dragging:
+            frog.x = pygame.mouse.get_pos()[0] - frog.rect.width / 2
+            frog.y = pygame.mouse.get_pos()[1] - frog.rect.height / 2
+
     def rotate_arrow(
         self, pivot: tuple[int, int]
     ) -> tuple[pygame.Surface, pygame.Rect]:
@@ -185,9 +185,15 @@ class Player(pygame.sprite.Sprite):
             self.is_falling = True
 
     def update(self):
+        global dragging
         """
         Call all other object functions to update its state.
         """
+        if frog.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
+            dragging = True
+        elif not pygame.mouse.get_pressed()[0]:
+            dragging = False
+        drag_frog()
         if not self.is_falling:
             self.speed_y = 0
             blit_arrow, arrow_rect = self.rotate_arrow(
@@ -420,6 +426,8 @@ def render():
                         obj.breakable = True
                         obj.moving = False
                         obj.state = 1
+                        obj.breaking = 0
+                        obj.time0 = 0
                     if obj.moving:
                         obj.image = pygame.image.load(f"{file_location}assets/movable-placeholder.png")
                     elif obj.breakable:
@@ -446,6 +454,9 @@ def camera_move():
         add_y = 0.4 * max_y - frog.y
         for sprite in blocks:
             sprite.rect.y += add_y
+        for sprite in breakables:
+            if sprite not in blocks:
+                sprite.rect.y += add_y
         for sprite in levels:
             sprite.rect.y += add_y
         map_height += add_y
@@ -454,6 +465,9 @@ def camera_move():
         add_y = 0.7 * max_y - frog.y
         for sprite in blocks:
             sprite.rect.y += add_y
+        for sprite in breakables:
+            if sprite not in blocks:
+                sprite.rect.y += add_y
         for sprite in levels:
             sprite.rect.y += add_y
         map_height += add_y
@@ -495,23 +509,29 @@ def move_flying():
         sprite.rect.x += sprite.direction * 2
 
 
-def break_block(start):
-    global breaking
-    breaking = 1
+def break_block():
     col_rect = pygame.Rect(
         (frog.rect.x, frog.rect.y), (frog.rect.width, frog.rect.height + 1)
     )
     for sprite in breakables:
         if col_rect.colliderect(sprite) and not frog.is_falling:
+            sprite.breaking = 1
             time = pygame.time.get_ticks() // 1000
-            sprite.state = int(time - start)
+            sprite.state = int(time - sprite.time0)
             if sprite.state >= 4:
                 blocks.remove(sprite)
-                breaking = 0
+                sprite.breaking = 0
+                sprite.state = 1
+                sprite.image = pygame.image.load(f'{file_location}assets/breakable1.png')
+                regenerate(sprite)
                 break
             if sprite.state > 0 and sprite.state < 4:
                 sprite.image = pygame.image.load(f'{file_location}assets/breakable{sprite.state}.png')
 
+
+def regenerate(sprite):
+    pygame.time.set_timer(pygame.USEREVENT + 1, regeneration_time * 1000, loops=1)
+    return sprite
 
 
 
@@ -562,7 +582,8 @@ while running:
                     show_menu = False
                 else:
                     show_menu = True
-
+        if event.type == pygame.USEREVENT + 1:
+            blocks.add(sprite)
     keys = pygame.key.get_pressed()
 
     if keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_w]:
@@ -574,11 +595,6 @@ while running:
     if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
         frog.angle -= 100 * dt
 
-    if frog.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-        dragging = True
-    elif not pygame.mouse.get_pressed()[0]:
-        dragging = False
-
 
     screen.fill("#242424")
 
@@ -588,10 +604,9 @@ while running:
                 (frog.rect.x, frog.rect.y), (frog.rect.width, frog.rect.height + 1)
             )
             if col_rect.colliderect(sprite) and not frog.is_falling:
-                if not breaking:
-                    start = pygame.time.get_ticks() // 1000
-                break_block(start)
-        drag_frog()
+                if not sprite.breaking:
+                    sprite.time0 = pygame.time.get_ticks() // 1000
+                break_block()
         cords()
         move_flying()
         levels.draw(screen)
