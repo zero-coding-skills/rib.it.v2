@@ -25,10 +25,6 @@ default_font = pygame.font.Font(f"{file_location}assets/jersey10.ttf", 100 * sca
 if os.path.exists(f"{file_location}assets/level.demo"):
     os.remove(f"{file_location}assets/level.demo")
 
-running = True
-show_menu = False
-
-
 arrow_right = f"{file_location}assets/arrow-right.png"
 arrow_left = f"{file_location}assets/arrow-left.png"
 arrow = f"{file_location}assets/arrow.png"
@@ -43,6 +39,8 @@ general_x = 0
 general_y = 0
 map_height = 0
 dragging = False
+running = True
+show_menu = False
 
 
 class Player(pygame.sprite.Sprite):
@@ -501,12 +499,13 @@ def move_flying():
     col_rect = pygame.Rect(
         (frog.rect.x, frog.rect.y), (frog.rect.width, frog.rect.height + 1)
     )
+    speed_limiter = frame_rate / 60
     for sprite in flying:
         if sprite.rect.x >= max_x - sprite.rect.width and sprite.direction == 1 or sprite.rect.x <= 0 and sprite.direction == -1:
             sprite.direction = -1 * sprite.direction
         if col_rect.colliderect(sprite) and not frog.is_falling:
-            frog.x += sprite.direction * 2
-        sprite.rect.x += sprite.direction * 2
+            frog.x += sprite.direction * int(2 / speed_limiter)
+        sprite.rect.x += sprite.direction * int(2 / speed_limiter)
 
 
 def break_block():
