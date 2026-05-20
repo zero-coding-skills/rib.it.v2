@@ -7,7 +7,7 @@ It is inspired by the game <a href="https://store.steampowered.com/app/1061090/J
 ### Controls
 
 - You ascend the obstacles by jumping from one to the next.
-- 
+
 - To jump, hold <kbd>SPACE</kbd>, <kbd>W</kbd> or <kbd>↑</kbd> to charge jump intensity and aim using <kbd>A</kbd> ,<kbd>D</kbd> or <kbd>←</kbd>, <kbd>→</kbd>.
 
 - Let go of <kbd>SPACE</kbd> to jump.
@@ -39,4 +39,3 @@ You can also use pygame community edition:
 > [!WARNING]
 > If your computer runs Windows on aarch64 (arm64) architecture,
 > You must install the x86 version of python because pygame does not have an aarch64 version for Windows.
-

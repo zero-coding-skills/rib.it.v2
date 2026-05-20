@@ -34,6 +34,7 @@ break_block_img = f'{file_location}assets/breakable1.png'
 movable_block_img = f'{file_location}assets/movable-placeholder.png'
 level = f"{file_location}assets/background-500x2000.png"
 block_img_count = 2
+os.system('cls')
 print("The game's resolution is: " + str(max_x) + "x" + str(max_y))
 general_x = 0
 general_y = 0
@@ -361,17 +362,15 @@ def generate():
     pos = random.randint(1, (chars // 2))
 
     line.append("-" * (pos - 1))
-    chosen = random.randint(1, 3)
+    chosen = random.randint(1, 5)
     if c_line == 0:
-        line.append("n")
-    elif chosen == 1:
         line.append("n")
     elif chosen == 2:
         line.append("b")
     elif chosen == 3:
         line.append("f")
     else:
-        line.append("-")
+        line.append("n")
 
     line.append((chars // 2 - pos) * "-")
 
@@ -474,7 +473,6 @@ def camera_move():
 
 last_y = 0
 high_score = 0
-breaking = 0
 
 def cords():
     global last_y
@@ -616,5 +614,6 @@ while running:
     pygame.display.flip()
     dt = clock.tick(frame_rate) / 1000
 
+os.system('cls')
 print("Your highest score this game was: " + str(int(high_score)))
 pygame.quit()
