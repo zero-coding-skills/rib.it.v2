@@ -5,3 +5,4 @@ file_location = "game/"
 frame_rate = 60
 block_gap = 64
 regeneration_time = 5 # the time (in seconds) it takes to regenerate breakable blocks
+break_in_sec = 4 # the time (in seconds) it takes to break a  block (it will be actually more time)

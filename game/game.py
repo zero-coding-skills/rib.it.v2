@@ -1,9 +1,10 @@
+from asyncio.windows_events import NULL
 import math
 import os
 import random
 from collections.abc import Callable
 import pygame
-from settings import scale, fullscreen, max_x, max_y, file_location, frame_rate, block_gap, regeneration_time
+from settings import scale, fullscreen, max_x, max_y, file_location, frame_rate, block_gap, regeneration_time, break_in_sec
 
 pygame.init()
 
@@ -25,21 +26,20 @@ default_font = pygame.font.Font(f"{file_location}assets/jersey10.ttf", 100 * sca
 if os.path.exists(f"{file_location}assets/level.demo"):
     os.remove(f"{file_location}assets/level.demo")
 
-arrow_right = f"{file_location}assets/arrow-right.png"
-arrow_left = f"{file_location}assets/arrow-left.png"
 arrow = f"{file_location}assets/arrow.png"
 arrow_small = f"{file_location}assets/arrow-small.png"
+arrow_load = f"{file_location}assets/arrow-load.png"
 player_img = f"{file_location}assets/frogo.png"
 break_block_img = f'{file_location}assets/breakable1.png'
 movable_block_img = f'{file_location}assets/movable-placeholder.png'
 level = f"{file_location}assets/background-500x2000.png"
 block_img_count = 2
+break_block_img_count = 3
 os.system('cls')
 print("The game's resolution is: " + str(max_x) + "x" + str(max_y))
 general_x = 0
 general_y = 0
 map_height = 0
-dragging = False
 running = True
 show_menu = False
 
@@ -59,7 +59,6 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(player_img)
         self.image = pygame.transform.scale_by(self.image, scale)
-        self.world_x, self.world_y = 0, 0
         self.rect = self.image.get_rect()
         self.x = x
         self.y = y
@@ -75,8 +74,11 @@ class Player(pygame.sprite.Sprite):
         self.pre_pos = (0, 0)
         self.jump_angle = 90
         self.is_falling = True
-        self.arrow = pygame.image.load(arrow_right)
+        self.arrow = pygame.image.load(arrow_small)
         self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
+        self.arrow_load = pygame.image.load(arrow_load)
+        self.arrow_load = pygame.transform.scale_by(self.arrow_load, scale / 2)
+        self.dragging = False
 
     def charge(self):
         """
@@ -127,22 +129,23 @@ class Player(pygame.sprite.Sprite):
                     * math.fabs(math.cos(math.radians(self.angle))) ** 1.5
                 )
 
-    def drag_frog():
-        if dragging:
+    def drag_frog(self):
+        if self.dragging:
             frog.x = pygame.mouse.get_pos()[0] - frog.rect.width / 2
             frog.y = pygame.mouse.get_pos()[1] - frog.rect.height / 2
 
     def rotate_arrow(
         self, pivot: tuple[int, int]
-    ) -> tuple[pygame.Surface, pygame.Rect]:
+    ) -> tuple[pygame.Surface, pygame.Surface, pygame.Rect]:
         """
         Rotates the arrow to the direction of jumping.
         :param pivot: the point around which the arrow is rotated
         :return: image and its position
         """
-        image = pygame.Surface(
-            (self.arrow.get_width(), self.arrow.get_height() * 2), pygame.SRCALPHA
-        )
+        image = pygame.Surface((self.arrow.get_width(), self.arrow.get_height() * 2), pygame.SRCALPHA)
+        charge = pygame.Surface((self.arrow.get_width(), self.arrow.get_height() * 2), pygame.SRCALPHA)
+        charge.blit(self.arrow_load, (0, 32-(self.arrow.get_height() / 10) * self.force), (0, self.arrow.get_height() - (self.arrow.get_height() / 10) * self.force, self.arrow.get_width(), self.arrow.get_height() * 2))
+        charge = pygame.transform.rotozoom(charge, self.angle - 90, 1)
         image.blit(self.arrow, (0, 0))
         image = pygame.transform.rotozoom(image, self.angle - 90, 1)
         rect = image.get_rect()
@@ -153,7 +156,7 @@ class Player(pygame.sprite.Sprite):
             self.arrow = pygame.image.load(arrow)
             self.arrow = pygame.transform.scale_by(self.arrow, scale / 2)
         rect.center = pivot
-        return image, rect
+        return image, charge, rect
 
     def collision(self):
         """
@@ -184,22 +187,21 @@ class Player(pygame.sprite.Sprite):
             self.is_falling = True
 
     def update(self):
-        global dragging
         """
         Call all other object functions to update its state.
         """
         if frog.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
-            dragging = True
+            self.dragging = True
         elif not pygame.mouse.get_pressed()[0]:
-            dragging = False
-        drag_frog()
+            self.dragging = False
+        self.drag_frog()
         if not self.is_falling:
             self.speed_y = 0
-            blit_arrow, arrow_rect = self.rotate_arrow(
-                (int(self.x + self.rect.width * 0.5), self.y - scale * 5)
-            )
+            blit_arrow, charge_arrow, arrow_rect = self.rotate_arrow((int(self.x + self.rect.width * 0.5), self.y - scale * 5))
             screen.blit(blit_arrow, arrow_rect)
-        if not dragging:
+            if self.charging:
+                screen.blit(charge_arrow, arrow_rect)
+        if not self.dragging:
             self.charge()
             self.move()
 
@@ -345,12 +347,6 @@ blocks = pygame.sprite.Group()
 flying = pygame.sprite.Group()
 breakables = pygame.sprite.Group()
 f = False
-
-def drag_frog():
-    if dragging:
-        frog.x = pygame.mouse.get_pos()[0] - frog.rect.width / 2
-        frog.y = pygame.mouse.get_pos()[1] - frog.rect.height / 2
-
 
 def generate():
     global c_line
@@ -506,15 +502,12 @@ def move_flying():
         sprite.rect.x += sprite.direction * int(2 / speed_limiter)
 
 
-def break_block():
-    col_rect = pygame.Rect(
-        (frog.rect.x, frog.rect.y), (frog.rect.width, frog.rect.height + 1)
-    )
+def break_block(sprite):
     for sprite in breakables:
-        if col_rect.colliderect(sprite) and not frog.is_falling:
-            sprite.breaking = 1
+        if sprite.breaking:
             time = pygame.time.get_ticks() // 1000
-            sprite.state = int(time - sprite.time0)
+            num = break_block_img_count / break_in_sec
+            sprite.state = int((time - sprite.time0) * num)
             if sprite.state >= 4:
                 blocks.remove(sprite)
                 sprite.breaking = 0
@@ -603,7 +596,8 @@ while running:
             if col_rect.colliderect(sprite) and not frog.is_falling:
                 if not sprite.breaking:
                     sprite.time0 = pygame.time.get_ticks() // 1000
-                break_block()
+                    sprite.breaking = 1
+            break_block(sprite)
         cords()
         move_flying()
         levels.draw(screen)
