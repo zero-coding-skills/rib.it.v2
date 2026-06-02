@@ -28,10 +28,12 @@ if os.path.exists(f"{file_location}assets/level.demo"):
 arrow = f"{file_location}assets/arrow.png"
 arrow_small = f"{file_location}assets/arrow-small.png"
 arrow_load = f"{file_location}assets/arrow-load.png"
-player_img = f"{file_location}assets/frogo.png"
+player_img = f"{file_location}assets/frog16.png"
 break_block_img = f'{file_location}assets/breakable1.png'
-movable_block_img = f'{file_location}assets/cloud.png'
+movable_block_img = f'{file_location}assets/cloud32.png'
 level = f"{file_location}assets/background-500x2000.png"
+blocks_width = 32
+def_block_height = 16
 block_img_count = 2
 break_block_img_count = 3
 os.system('cls')
@@ -143,7 +145,7 @@ class Player(pygame.sprite.Sprite):
         """
         image = pygame.Surface((self.arrow.get_width(), self.arrow.get_height() * 2), pygame.SRCALPHA)
         charge = pygame.Surface((self.arrow.get_width(), self.arrow.get_height() * 2), pygame.SRCALPHA)
-        charge.blit(self.arrow_load, (0, 32-(self.arrow.get_height() / 10) * self.force), (0, self.arrow.get_height() - (self.arrow.get_height() / 10) * self.force, self.arrow.get_width(), self.arrow.get_height() * 2))
+        charge.blit(self.arrow_load, (0, 16  * scale - (self.arrow.get_height() / 10) * self.force), (0, self.arrow.get_height() - (self.arrow.get_height() / 10) * self.force, self.arrow.get_width(), self.arrow.get_height() * 2))
         charge = pygame.transform.rotozoom(charge, self.angle - 90, 1)
         image.blit(self.arrow, (0, 0))
         image = pygame.transform.rotozoom(image, self.angle - 90, 1)
@@ -167,11 +169,11 @@ class Player(pygame.sprite.Sprite):
         )
         for block in blocks.sprites():
             if col_rect.colliderect(block):
-                if self.pre_pos[1] - self.rect.height <= block.rect.y - block.rect.height // 2 and block.moving and self.pre_pos[1] - self.rect.height >= block.rect.y - block.rect.height // 2:
-                    self.y = block.rect.y - block.rect.height // 2
-                    self.is_falling = False
-                    return
-                if self.pre_pos[1] + self.rect.height <= block.rect.y and not block.moving:
+                #if self.pre_pos[1] - self.rect.height <= block.rect.y - block.rect.height // 2 and block.moving:
+                    #self.y = block.rect.y - block.rect.height // 2
+                    #self.is_falling = False
+                    #return
+                if self.pre_pos[1] + self.rect.height <= block.rect.y:
                     self.y = block.rect.y - self.rect.height
                     self.is_falling = False
                     return
@@ -239,7 +241,6 @@ class Map(pygame.sprite.Sprite):
     def __init__(self, img, x, y):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(img)
-        self.image = pygame.transform.scale_by(self.image, scale)
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
@@ -345,7 +346,7 @@ class UserInterface(pygame.sprite.Sprite):
 
 c_line = 0
 last_pos = 1
-chars = max_x // (32 * scale)
+chars = max_x // (blocks_width * scale)
 blocks = pygame.sprite.Group()
 flying = pygame.sprite.Group()
 breakables = pygame.sprite.Group()
@@ -356,9 +357,9 @@ def generate():
     global last_pos
     global f
 
-    lines = level_1.rect.height // ((32 + block_gap) * scale)
+    lines = level_1.rect.height // ((16 + block_gap) * scale)
     line = []
-    pos = random.randint(1, (chars // 2))
+    pos = random.randint(1, chars)
 
     line.append("-" * (pos - 1))
     chosen = random.randint(1, 5)
@@ -371,12 +372,12 @@ def generate():
     else:
         line.append("n")
 
-    line.append((chars // 2 - pos) * "-")
+    line.append((chars - pos) * "-")
 
     if pos != last_pos:
         if f and chosen == 3:
             pass
-        elif abs(last_pos - pos) < platform_x_gap + 1:
+        elif abs(last_pos - pos) < platform_x_gap:
             with open(f'{file_location}assets/level.demo', "a") as f:
                 f.write("".join(line) + "\n")
             c_line += 1
@@ -394,7 +395,6 @@ def generate():
 
 def render():
     char = 0
-    def_block_height = 32
     line = 0
     bimg = 0
 
@@ -403,14 +403,14 @@ def render():
             read_char = f.read(1)
             if not read_char:
                 break
-            if char + 1 > chars / 2:
+            if char + 1 > chars:
                 char = 0
                 line += 1
             if read_char != "\n":
                 if read_char != "-":
                     obj = pygame.sprite.Sprite()
                     bimg = random.randint(0, block_img_count - 1)
-                    obj.image = pygame.image.load(f'{file_location}assets/block{bimg}.wide.png')
+                    obj.image = pygame.image.load(f'{file_location}assets/block{bimg}.png')
                     if read_char == "n":
                         obj.breakable = False
                         obj.moving = False
@@ -418,23 +418,21 @@ def render():
                         obj.breakable = False
                         obj.moving = True
                         obj.direction = 1
+                        obj.image = pygame.image.load(movable_block_img)
                     elif read_char == "b":
                         obj.breakable = True
                         obj.moving = False
                         obj.state = 1
                         obj.breaking = 0
                         obj.time0 = 0
-                    if obj.moving:
-                        obj.image = pygame.image.load(movable_block_img)
-                    elif obj.breakable:
                         obj.image = pygame.image.load(f"{file_location}assets/breakable1.png")
                     obj.image = pygame.transform.scale_by(obj.image, scale)
                     obj.rect = obj.image.get_rect()
-                    height_diff = def_block_height - obj.rect.height
-                    obj.rect.x = char * obj.rect.width
-                    obj.rect.y = (-2000 + max_y) + line * (obj.rect.height + height_diff + block_gap) * scale
+                    obj.rect.x = char * blocks_width * scale
+                    obj.rect.y = (-2000 + max_y) + line * (def_block_height + block_gap) * scale
                     block = obj
                     blocks.add(block)
+                    print(block.rect.x, block.rect.y)
                     if obj.moving:
                         flying.add(block)
                     if obj.breakable:
@@ -516,10 +514,12 @@ def break_block(sprite):
                 sprite.breaking = 0
                 sprite.state = 1
                 sprite.image = pygame.image.load(f'{file_location}assets/breakable1.png')
+                sprite.image = pygame.transform.scale_by(sprite.image, scale)
                 regenerate(sprite)
                 break
             if sprite.state > 0 and sprite.state < 4:
                 sprite.image = pygame.image.load(f'{file_location}assets/breakable{sprite.state}.png')
+                sprite.image = pygame.transform.scale_by(sprite.image, scale)
 
 
 def regenerate(sprite):
