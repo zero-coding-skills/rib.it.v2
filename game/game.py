@@ -1,10 +1,9 @@
-from asyncio.windows_events import NULL
 import math
 import os
 import random
 from collections.abc import Callable
 import pygame
-from settings import scale, fullscreen, max_x, max_y, file_location, frame_rate, block_gap, regeneration_time, break_in_sec
+from settings import scale, fullscreen, max_x, max_y, file_location, frame_rate, block_gap, regeneration_time, break_in_sec, platform_x_gap
 
 pygame.init()
 
@@ -31,7 +30,7 @@ arrow_small = f"{file_location}assets/arrow-small.png"
 arrow_load = f"{file_location}assets/arrow-load.png"
 player_img = f"{file_location}assets/frogo.png"
 break_block_img = f'{file_location}assets/breakable1.png'
-movable_block_img = f'{file_location}assets/movable-placeholder.png'
+movable_block_img = f'{file_location}assets/cloud.png'
 level = f"{file_location}assets/background-500x2000.png"
 block_img_count = 2
 break_block_img_count = 3
@@ -168,7 +167,11 @@ class Player(pygame.sprite.Sprite):
         )
         for block in blocks.sprites():
             if col_rect.colliderect(block):
-                if self.pre_pos[1] + self.rect.height <= block.rect.y:
+                if self.pre_pos[1] - self.rect.height <= block.rect.y - block.rect.height // 2 and block.moving and self.pre_pos[1] - self.rect.height >= block.rect.y - block.rect.height // 2:
+                    self.y = block.rect.y - block.rect.height // 2
+                    self.is_falling = False
+                    return
+                if self.pre_pos[1] + self.rect.height <= block.rect.y and not block.moving:
                     self.y = block.rect.y - self.rect.height
                     self.is_falling = False
                     return
@@ -341,7 +344,7 @@ class UserInterface(pygame.sprite.Sprite):
 
 
 c_line = 0
-last_pos = None
+last_pos = 1
 chars = max_x // (32 * scale)
 blocks = pygame.sprite.Group()
 flying = pygame.sprite.Group()
@@ -373,7 +376,7 @@ def generate():
     if pos != last_pos:
         if f and chosen == 3:
             pass
-        else:
+        elif abs(last_pos - pos) < platform_x_gap + 1:
             with open(f'{file_location}assets/level.demo', "a") as f:
                 f.write("".join(line) + "\n")
             c_line += 1
@@ -422,7 +425,7 @@ def render():
                         obj.breaking = 0
                         obj.time0 = 0
                     if obj.moving:
-                        obj.image = pygame.image.load(f"{file_location}assets/movable-placeholder.png")
+                        obj.image = pygame.image.load(movable_block_img)
                     elif obj.breakable:
                         obj.image = pygame.image.load(f"{file_location}assets/breakable1.png")
                     obj.image = pygame.transform.scale_by(obj.image, scale)
