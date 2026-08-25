@@ -9,7 +9,7 @@
 </head>
 <body>
     <div id="bg">
-        <div id="img"></div>
+        <div class="blur" id="img"></div>
     </div>
     <div id="content">
         <div id="buttons">
@@ -35,8 +35,12 @@
                 </div>
                 <p class="gray">Here, you can choose the version you'll download. <br> For the python version, read the documentation <a href="https://github.com/zero-coding-skills/rib.it.v2">here</a> to ensure it's working.</p>
             </div>
+            <div id="menu-buttons">
+                <button id="download-switch" onclick="show('download')">Download</button>
+                <button id="about-switch" onclick="show('about')">About</button>
+            </div>
         </div>
-        <div id="link">
+        <div id="link" class="blur">
             <a href="https://github.com/zero-coding-skills/rib.it.v2"><img src="content/git-pixel32.png"></a>
         </div>
     </div>

@@ -13,10 +13,6 @@ html::after {
 }
 
 body {
-    background-image: url("content/wallp.png");
-    background-size: cover;
-    background-repeat: no-repeat;
-    height: 100vh;
     color: rgb(255, 255, 255);
     font-family: Pixels, serif;
 }
@@ -31,7 +27,6 @@ button {
     font-size: 30px;
     cursor: pointer;
     width: 130px;
-    margin-left: 10px;
     transition-duration: 0.3s;
 }
 
@@ -51,6 +46,13 @@ h1 {
     font-size: 130px;
     width: max-content;
     text-shadow: 5px 5px 0 #0a1109;
+}
+
+#img {
+    height: 200vh;
+    width: 200vh;
+    background-image: url("content/wallp.png");
+    background-size: cover;
 }
 
 #content {
@@ -75,6 +77,27 @@ h1 {
     box-shadow: 5px 5px 0 0 #0a1109;
 }
 
+#menu-buttons {
+    position: fixed;
+    top: 100%;
+    left: 50%;
+    height: 39px;
+    transform: translateX(-50%);
+    background-color: #2a3028;
+    border: 5px solid #e3ffda;
+    border-top: 5px solid #2a3028;
+    box-shadow: 5px 5px 0 0 #0a1109;
+}
+
+#menu-buttons button {
+    background-color: #242424;
+    border: none;
+    box-shadow: none;
+    width: 130px;
+    transition-duration: 0.3s;
+    margin-left: 0;
+}
+
 .gray {
     color: #cdcdcd;
 }
@@ -85,6 +108,10 @@ h1 {
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
+}
+
+#buttons button {
+    margin-left: 10px;
 }
 
 #buttons button:hover {
