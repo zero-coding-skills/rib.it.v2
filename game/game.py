@@ -36,7 +36,7 @@ blocks_width = 32
 def_block_height = 16
 block_img_count = 2
 break_block_img_count = 3
-os.system('cls')
+os.system('cls' if os.name == 'nt' else 'clear')
 print("The game's resolution is: " + str(max_x) + "x" + str(max_y))
 general_x = 0
 general_y = 0
@@ -50,7 +50,7 @@ class Player(pygame.sprite.Sprite):
     Player object used for creating the player, managing position and everything player-wise.
     """
 
-    def __init__(self, x: int | float, y: int | float, charge_speed: int | float):
+    def __init__(self, x: float, y: float, charge_speed: float):
         """
         Create new player object.
         :param x: x position on screen
@@ -254,8 +254,8 @@ class UserInterface(pygame.sprite.Sprite):
     def __init__(
         self,
         text: str,
-        x: int | float,
-        y: int | float,
+        x: float,
+        y: float,
         ui_type: str,
         *,
         has_border: bool = False,
@@ -611,6 +611,6 @@ while running:
     pygame.display.flip()
     dt = clock.tick(frame_rate) / 1000
 
-os.system('cls')
+os.system('cls' if os.name == 'nt' else 'clear')
 print("Your highest score this game was: " + str(int(high_score)))
 pygame.quit()
