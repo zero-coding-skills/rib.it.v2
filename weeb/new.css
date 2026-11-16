@@ -1,0 +1,79 @@
+@font-face {
+	font-family: Terminal;
+	src: url("assets/TerminalVector.ttf");
+}
+body {
+    font-family: Terminal;
+    background: url("assets/wallp.png");
+    cursor: default;
+    transition: 0.1s;
+}
+button {
+    font-family: Terminal;
+    cursor: pointer;
+    transition: 0.1s;
+}
+.b {
+    width: 150px;
+    height: 40px;
+    padding: 10px;
+    border: 3px solid black;
+    background-color: darkolivegreen;
+    color: beige;
+    font-size: 105%;
+}
+.keycap {
+    padding: 4px;
+    border: 2px solid #555555;
+    box-shadow: 0 1px 0 #555555;
+    border-radius: 10px;
+    width: fit-content;
+    background-color: #222222;
+    color: white;
+    text-align: center;
+    transform: translateY(-50%);
+    cursor: default;
+}
+#navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #000000aa;
+    backdrop-filter: blur(10px);
+}
+#nav_name {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 150%;
+    color: white;
+    transition: 0.1s;
+}
+#nav_name span {
+    transition: 0.1s;
+}
+#nav_name:hover span {
+    color: palegreen;
+}
+#nav_name:hover {
+    color: #bbbbbb;
+    cursor: pointer;
+}
+#nav_buttons {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    font-size: 130%;
+    transform: translateY(-50%);
+}
+#nav_buttons button {
+    background-color: #00000000;
+    color: white;
+    border: none;
+}
+#nav_buttons button:hover {
+    color: #bbbbbb
+}
