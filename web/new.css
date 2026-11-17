@@ -39,6 +39,7 @@ button {
     cursor: pointer;
 }
 .code {
+    white-space: nowrap;
     background-color: #333333;
     color: #888888;
     padding: 0px 2px;
@@ -117,24 +118,20 @@ button {
     padding: 0;
     text-shadow: 2px 2px 0 #00000033;
 }
-#about , #download{
+.box {
     position: fixed;
     top: 50%;
     left: 50%;
+    width: 80%;
     color: white;
     transform: translate(-50%, -50%);
     background-color: #00000033;
+    border: 2px solid #00000022;
     backdrop-filter: blur(10px);
 }
-#download h1, h2 {
+.box h1, h2 {
     margin: 10px;
 }
-#about h1, h2 {
-    margin: 10px;
-}
-#download p {
-    margin: 10px 20px;
-}
-#about p {
-    margin: 10px 20px;
+.box p {
+    margin: 5px 20px;
 }
