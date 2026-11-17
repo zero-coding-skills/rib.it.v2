@@ -34,12 +34,14 @@ button {
 .darker {
     color: #222222;
 }
+.nolinebreak {
+    white-space: nowrap;
+}
 .link {
     color: palegreen;
     cursor: pointer;
 }
 .code {
-    white-space: nowrap;
     background-color: #333333;
     color: #888888;
     padding: 0px 2px;
@@ -72,8 +74,6 @@ button {
 #nav_name p, span {
     margin-top: 0;
     margin-bottom: 0;
-}
-#nav_name span {
     transition: 0.1s;
 }
 #nav_name:hover span {
@@ -113,9 +113,6 @@ button {
     transform: translate(-50%, -50%);
     color: white;
     font-size: 350%;
-}
-#hello span {
-    padding: 0;
     text-shadow: 2px 2px 0 #00000033;
 }
 .box {
