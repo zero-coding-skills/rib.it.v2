@@ -7,7 +7,6 @@ import pygame
 from settings import (
     block_gap,
     break_in_sec,
-    file_location,
     frame_rate,
     fullscreen,
     max_x,
@@ -30,9 +29,15 @@ else:
     screen = pygame.display.set_mode((max_x, max_y))
 
 
+file_location = "game/"
+try:
+    default_font = pygame.font.Font(f"{file_location}assets/jersey10.ttf", 100 * scale)
+except OSError:
+    default_font = pygame.font.Font("assets/jersey10.ttf", 100 * scale)
+    file_location = ""
+
 clock = pygame.time.Clock()
 dt = 0
-default_font = pygame.font.Font(f"{file_location}assets/jersey10.ttf", 100 * scale)
 if os.path.exists(f"{file_location}assets/level.demo"):
     os.remove(f"{file_location}assets/level.demo")
 
