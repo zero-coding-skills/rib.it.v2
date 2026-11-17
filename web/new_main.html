@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>rib.it</title>
+        <link rel="stylesheet" href="new.css">
+        <script src="new.js"></script>
+    </head>
+    <body>
+        <div id="navbar">
+            <div id="nav_name" onclick="window.location.href='new_main.html'">
+                <p>rib.<span>it</span></p>
+            </div>
+            <div id="nav_buttons">
+                <button onclick="home()">home</button>
+                <button onclick="show('download', 'about')">download</button>
+                <button onclick="show('about', 'download')">about</button>
+                <button onclick="window.location.href='https://github.com/zero-coding-skills/rib.it.v2'">github</button>
+            </div>
+        </div>
+        <div id="hello" style="opacity: 1;">
+            <span>W</span><span>e</span><span>l</span><span>c</span><span>o</span><span>m</span><span>e</span>
+        </div>
+        <div id="about" class="box" style="opacity: 0;pointer-events: none;">
+            <h1>About</h1>
+            <p>This game was inspired by Jump King <br>
+            You play as a frog find yourself at the bottom of a lake.<br>
+            So what's the goal?</p>
+            <p class="command">GET BACK TO THE SURFACE OF COURSE</p>
+            <h2>Controls</h2>
+            <p>You ascend the obstacles by jumping from one to the next.<br>
+            Hold <span class="keycap">SPACE</span>, <span class="keycap">W</span> or <span class="keycap">↑</span> to charge and then release to jump.<br>
+            Use <span class="keycap">A</span> ,<span class="keycap">D</span> or <span class="keycap">←</span>, <span class="keycap">→</span> to aim.</p>
+        </div>
+        <div id="download" class="box" style="opacity: 0; pointer-events: none;">
+            <h1>Download</h1>
+            <p>You can download the latest release <span class="link" onclick="window.location.href='https://github.com/zero-coding-skills/rib.it.v2/releases/latest/download/game.zip'">here</span>.</p>
+            <h2>How to use</h2>
+            <p>To run the game you will need to install python and pygame <span class="darker nolinebreak">(original or the community edition)</span>.<br>
+            Then, open powershell or command line, change the directory to <span class="code location">".../rib.it.v2/game"</span> and run <span class="code nolinebreak"><span class="command">python</span> game.py</span><br>
+            If you get file not found error, open <span class="darker">settings.py</span> and set file location to <span class="code location">""</span> or <span class="code location">"game/"</span>.</p>
+            <p class="important">Windows on arm users need to install the pygame-ce or use x86 version of python.</p>
+        </div>
+    </body>
+</html>

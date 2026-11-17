@@ -216,6 +216,7 @@ class Player(pygame.sprite.Sprite):
             self.is_falling = True
 
     def update(self):
+        global dragging
         """
         Call all other object functions to update its state.
         """
@@ -565,6 +566,10 @@ def break_block(sprite):
                     f"{file_location}assets/breakable{sprite.state}.png"
                 )
                 sprite.image = pygame.transform.scale_by(sprite.image, scale)
+
+def regenerate(sprite):
+    pygame.time.set_timer(pygame.USEREVENT + 1, regeneration_time * 1000, loops=1)
+    return sprite
 
 
 def regenerate(sprite):
