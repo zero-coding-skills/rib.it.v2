@@ -13,26 +13,42 @@ button {
     cursor: pointer;
     transition: 0.1s;
 }
-.b {
-    width: 150px;
-    height: 40px;
-    padding: 10px;
-    border: 3px solid black;
-    background-color: darkolivegreen;
-    color: beige;
-    font-size: 105%;
-}
 .keycap {
-    padding: 4px;
-    border: 2px solid #555555;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    padding: 0px 2px;
+    border: 1px solid #555555;
     box-shadow: 0 1px 0 #555555;
-    border-radius: 10px;
     width: fit-content;
     background-color: #222222;
     color: white;
     text-align: center;
+    font-size: 80%;
     transform: translateY(-50%);
     cursor: default;
+}
+.important {
+    padding-left: 5px;
+    border-left: 3px solid #dd0000;
+    background-color: #00000011;
+}
+.darker {
+    color: #222222;
+}
+.link {
+    color: palegreen;
+    cursor: pointer;
+}
+.code {
+    background-color: #333333;
+    color: #888888;
+    padding: 0px 2px;
+    width: fit-content;
+}
+.command {
+    color: #ffcc00;
+}
+.location {
+    color: palegreen;
 }
 #navbar {
     position: fixed;
@@ -52,6 +68,10 @@ button {
     color: white;
     transition: 0.1s;
 }
+#nav_name p, span {
+    margin-top: 0;
+    margin-bottom: 0;
+}
 #nav_name span {
     transition: 0.1s;
 }
@@ -62,12 +82,20 @@ button {
     color: #bbbbbb;
     cursor: pointer;
 }
+#nav_name:active {
+    font-size: 140%;
+    left: 22px;
+}
 #nav_buttons {
     position: absolute;
     right: 20px;
     top: 50%;
-    font-size: 130%;
     transform: translateY(-50%);
+}
+#nav_buttons button:active {
+    margin-right: 1px;
+    margin-left: 1px;
+    font-size: 80%;
 }
 #nav_buttons button {
     background-color: #00000000;
@@ -76,4 +104,37 @@ button {
 }
 #nav_buttons button:hover {
     color: #bbbbbb
+}
+#hello {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 350%;
+}
+#hello span {
+    padding: 0;
+    text-shadow: 2px 2px 0 #00000033;
+}
+#about , #download{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    color: white;
+    transform: translate(-50%, -50%);
+    background-color: #00000033;
+    backdrop-filter: blur(10px);
+}
+#download h1, h2 {
+    margin: 10px;
+}
+#about h1, h2 {
+    margin: 10px;
+}
+#download p {
+    margin: 10px 20px;
+}
+#about p {
+    margin: 10px 20px;
 }
