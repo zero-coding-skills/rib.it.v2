@@ -38,4 +38,4 @@ You can also use pygame community edition:
 
 > [!WARNING]
 > If your computer runs Windows on aarch64 (arm64) architecture,
-> You must install the x86 version of python because pygame does not have an aarch64 version for Windows.
+> You must install the x86 version of python or pygame community edition for the game to run.
